@@ -181,11 +181,11 @@ Dropped: stamping `attempt_started_at` before each send to list unknown outcomes
 
 ## 2026-11-19: A send has no overall time limit
 
-The worker waits for every answer. The brief says a slow answer is still coming and a 200 means saved, so a timeout and resend is the one way to save twice on an endpoint that is slow but alive. Sends use `http.request`, never `fetch`, which follows redirects and has a hidden 300-second limit. Its `timeout` option stays unused, since it fires during a slow answer. Connecting has no timer either, since on localhost a connection is accepted or refused at once. An error before the socket connected means not sent; after it, the outcome is unknown. `socket.setKeepAlive(true, 10000)` is on as a backstop, with Linux's own probe interval and count.
+The brief says a slow answer is still coming and a 200 means saved, so a timeout and resend is the one way to save twice on an endpoint that is slow but alive. Sends use `http.request`, never `fetch`, which follows redirects and has a hidden 300-second limit; its `timeout` option stays unused, since it fires during a slow answer. Connecting has no timer: on localhost a connection is accepted or refused at once. An error before the socket connected means not sent, after it unknown. `socket.setKeepAlive(true, 10000)` is on as a backstop, with Linux's own probe interval and count.
 
-An endpoint that holds a connection and never answers keeps that one user waiting. The brief's table has no such endpoint.
+An endpoint that never answers keeps that one user waiting; the brief's table has no such endpoint.
 
-Dropped: a 60-second timeout, then a 120-second ceiling, each followed by a resend; and a 2-second connect timer cleared on the `connect` event, which a reused keep-alive socket never fires, so the timer would kill a slow answer there.
+Dropped: a 60-second timeout, then a 120-second ceiling, each followed by a resend; and a 2-second connect timer, which a reused keep-alive socket never clears, so it would kill slow answers.
 
 ## 2026-11-19: The status line decides, and a connection lost before it means resend
 
