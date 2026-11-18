@@ -204,13 +204,7 @@ Changed 2026-11-19 after review. The first version started at 0.5 seconds. With 
 
 A 4xx other than 429 most likely means a bug of ours. Retrying it can hold up that user, and skipping the event breaks exactly once, so the worker keeps retrying and logs it loudly.
 
-"Loudly" means each failed attempt on such an event is logged at error level with the event_id, the user_id, the status and how many times in a row it has failed. Once a minute the worker also prints a status line:
-- the number of unsent events
-- the age of the oldest unsent event
-- the longest send in flight
-- the number of users whose current event has failed 10 or more times in a row
-
-A user blocked by one refused event, a growing backlog, or a stuck send all show up there without searching the logs. (Added 2026-11-19 after review.)
+"Loudly" means each failed attempt on such an event is logged at error level with the event_id, the user_id, the status and how many times in a row it has failed. Once a minute the worker also prints a status line with the number of unsent events, the age of the oldest one, the longest send in flight, and the number of users whose current event has failed 10 or more times in a row. A user blocked by one refused event, a growing backlog, or a stuck send all show up there without searching the logs. (Added 2026-11-19 after review.)
 
 ## 2026-11-18: No overall timeout on a send; only a lost connection is resent
 
