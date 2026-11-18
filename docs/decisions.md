@@ -159,3 +159,9 @@ The first version of this choice had a 60-second timeout and resent after it. It
 When the worker is told to stop, it starts no new sends and waits for the ones in progress. Compose's `stop_grace_period` for the worker is 20 seconds; after that the worker is killed. Any send cut off, by that kill or by a crash, has no `delivered_at`, so it is sent again on restart and may be saved twice. A 200 that arrives just before a crash, ahead of the commit of `delivered_at`, has the same result.
 
 Sends have no overall timeout, so the grace period cannot wait for every send to end on its own. While the worker is stopping, no user moves forward, and the brief allows 30 seconds from our 2xx. 20 seconds lets most slow answers finish and leaves time to restart and catch up. The earlier plan was 70 seconds, sized to a 60-second request timeout that no longer exists.
+
+## 2026-11-18: A 429 pauses all sending for Retry-After
+
+On any 429 the worker starts no new sends to the endpoint, for any user, until Retry-After seconds have passed. If the header is missing or is not a whole number, the pause is 1 second. Sends already in progress carry on. A later 429 during a pause moves its end to whichever end is later. The event that got the 429 was not saved and goes out again after the pause.
+
+The brief lists rate limiting next to down and slow, as a state of the endpoint, and nothing in it says the limit is per user. Pausing only the user who got the 429 would leave every other user firing into the limit. Light users waiting a few seconds is fine against the 30 seconds the brief allows.
