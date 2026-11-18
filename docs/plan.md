@@ -22,7 +22,7 @@ The checker takes `loadgen.ndjson`, `endpoint.ndjson` and `modes.ndjson`. A chec
 
 `order`: for each user, the `created_at` values of saved events, in the order the endpoint saved them, strictly increase. Fails if nothing was saved.
 
-`timing`: each promised event is saved by its deadline. The deadline is `t_done` plus 30 s, unless the endpoint was in a mode other than healthy for that user within those 30 s, or the user still had an earlier promised event unsaved when the endpoint last recovered for that user. Then it is that recovery time plus 300 s, as the README interprets the brief's 5-minute rule. A recovery is the start of a healthy period, for that user, that lasts at least 30 s, so a flapping endpoint has not recovered until it stays up.
+`timing`: each promised event is saved by its deadline. The deadline is `t_done` plus 30 s, unless the endpoint was in a mode other than healthy for that user within those 30 s; then it is the user's next recovery plus 300 s. An event promised while an earlier event of the same user is still unsaved waits behind it, so its deadline is the user's last recovery before its promise plus 300 s, when that is later. Both follow the README's interpretation of the brief's 5-minute rule. A recovery is the start of a healthy period, for that user, that lasts at least 30 s, so a flapping endpoint has not recovered until it stays up.
 
 `intake_up`: outside `relay_stopped` windows, every valid post got a 2xx within 1 s and every invalid post got a 400. Fails if nothing was posted.
 
