@@ -22,6 +22,20 @@
 - Retry-After is a whole number of seconds.
 - A 429's limit may be per user or cover the whole endpoint; the brief does not say which.
 
+## Reading the history
+
+The git history has an annotated tag at the end of each phase. Each paragraph below says what that phase decided and what changed the design along the way. docs/decisions.md holds every decision as it stands now, and docs/review-2026-11-18.md holds the first review's findings.
+
+01-problem keeps Tequity's brief exactly as sent (12365f6), sets the working rules (ea370e3) and states the problem with its four pass conditions before any design (27b73a5).
+
+02-first-design settles every open point in docs/problem.md, one commit each. Our containers use host networking, so they reach Tequity's endpoint on the machine's own localhost (900044d). On Docker Desktop for Windows a host-network container cannot reach Windows' localhost at all, so the test rig moved into host-network containers (c3f4ee2). A 429 at first paused sending for every user (1663034).
+
+03-first-review applies the findings of five reviewer agents. Postgres had no named data volume, so `docker compose down` and `up` would have lost stored events (2186cd0), and a 200 whose body was cut off would have been resent and saved twice (fef6dc0). Retry waits starting at 0.5 seconds broke the 5-minute maths, so retries now start at 20 ms and the design is sized for a 10 ms endpoint (7f4ccbb). The 1-second hold had no arrival time to measure from (1693e5e), and the 429 pause moved from every user to the one user who got it (31e7e87).
+
+04-node replaces Go with Node.js, the author's own stack, and rewrites every Go detail in the docs (589fddc). Just before it, the README was cut to assumptions about Tequity's side (d63b22b), and `delivered_at` was set to commit before each next send, never alongside it (ddc6bcd).
+
+05-second-review cuts decisions.md to the current decisions, at most 150 words each (f680d19), then applies a second review by two agents. It found that the 2-second connect timer, cleared on a `connect` event that a reused keep-alive socket never fires, would kill slow answers and resend them, so the timer is gone (2a46f30; 94d0e7c carries the same change under a wrong message).
+
 ## What this is
 
 Tequity's take-home. An intake API on port 8080 stores each event in Postgres before it answers, and a worker passes the stored events on to Tequity's endpoint on port 9000, once each and in `created_at` order per user. The list above holds only assumptions about Tequity's side. docs/problem.md states the problem in full, and docs/decisions.md holds every design choice and its reason.
