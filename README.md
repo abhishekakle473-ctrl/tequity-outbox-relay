@@ -7,6 +7,7 @@
 - Our test rig (a fake endpoint on 9000, a load generator and a checker) runs as containers with host networking, never as programs on the developer's machine. On Docker Desktop for Windows, host-network containers and Windows cannot reach each other on localhost, while containers inside Docker Desktop's Linux VM can, the same way they do on a Linux machine.
 - The relay and its test rig are written in Go. Postgres is version 16, with the image tag pinned.
 - One worker process sends for every user, up to 200 users at a time. An event's `delivered_at` is the only record of progress: anything without it gets sent.
+- When healthy, Tequity's endpoint answers in about 14 ms or less. Taking the heaviest user as 30 of the 100 events a second, that is the speed it needs to clear the backlog of a 5-minute outage within 5 minutes of recovery. If the endpoint rate limits us below 200 events a second during recovery, no design meets that.
 
 ## What this is
 

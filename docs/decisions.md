@@ -79,3 +79,21 @@ Events go in one `events` table: event_id as the primary key, user_id, created_a
 The worker keeps in memory which users are in flight, plus any pause or retry wait. None of that has to survive a restart. After one, anything without `delivered_at` is sent again, and the worst a forgotten wait costs is one extra 500 or 429.
 
 The other option was several worker processes splitting users between them through row locks or leases in Postgres. At 100 events a second one process has plenty of room, and with one there is nothing to coordinate. If it dies, Docker restarts it. The limit of 200 users in flight comes from the per-user maths: even at 1-second answers it gives 200 events a second in total, the rate needed to clear a 5-minute outage.
+
+## 2026-11-18: The endpoint must answer in about 14 ms for the heaviest user to keep up
+
+One user's events go out one at a time. If event 2 went out before event 1 was saved, and event 1 then got a 500, event 2 would be saved first and the order would break. So one user's speed is capped at 1 ÷ (the endpoint's answer time + our time per event). Our time per event is one database commit on localhost, estimated at 2 ms; the test rig will measure it.
+
+| Endpoint answer time | Most events per second for one user |
+|---|---|
+| 2 ms | 250 |
+| 10 ms | about 83 |
+| 50 ms | about 19 |
+| 200 ms | about 5 |
+| 1 s | about 1 |
+
+In normal running, a user sending 30 events a second needs answers in about 31 ms or less, or it falls further behind every second.
+
+After an outage of D seconds, a user sending r events a second needs r × (D + 300) ÷ 300 events a second to clear its backlog and keep up with new events within the 5 minutes the brief allows. After a 5-minute outage that is 2r: 60 a second for a user sending 30, which needs answers in about 14 ms. Across all users it is 60,000 events in 300 seconds, 200 a second, and 200 users in flight cover that even at 1-second answers. The heaviest user is the limit, and the total is not.
+
+No design gets round this. The order rule forces one event at a time per user, and the brief sends one event per request. So the README assumes answers in about 14 ms or less when healthy. Requests over localhost usually take a few ms. If the endpoint rate limits us below 200 a second during recovery, nothing meets the 5 minutes after a 5-minute outage.
