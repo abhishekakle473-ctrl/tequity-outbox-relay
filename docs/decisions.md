@@ -80,23 +80,43 @@ The worker keeps in memory which users are in flight, plus any pause or retry wa
 
 The other option was several worker processes splitting users between them through row locks or leases in Postgres. At 100 events a second one process has plenty of room, and with one there is nothing to coordinate. If it dies, Docker restarts it. The limit of 200 users in flight comes from the per-user maths: even at 1-second answers it gives 200 events a second in total, the rate needed to clear a 5-minute outage.
 
-## 2026-11-18: The endpoint must answer in about 14 ms for the heaviest user to keep up
+## 2026-11-18: The endpoint must answer in about 10 ms for the heaviest user to keep up
 
-One user's events go out one at a time. If event 2 went out before event 1 was saved, and event 1 then got a 500, event 2 would be saved first and the order would break. So one user's speed is capped at 1 ÷ (the endpoint's answer time + our time per event). Our time per event is one database commit on localhost, estimated at 2 ms; the test rig will measure it.
+Changed 2026-11-19 after review. The first version said 14 ms. It left out the waits before retries and guessed our own time per event at 2 ms; the measured figure is about 5 ms.
 
-| Endpoint answer time | Most events per second for one user |
-|---|---|
-| 2 ms | 250 |
-| 10 ms | about 83 |
-| 50 ms | about 19 |
-| 200 ms | about 5 |
-| 1 s | about 1 |
+One user's events go out one at a time. If event 2 went out before event 1 was saved, and event 1 then got a 500, event 2 would be saved first and the order would break. So one user's speed is capped by the time one event takes from start to finish.
 
-In normal running, a user sending 30 events a second needs answers in about 31 ms or less, or it falls further behind every second.
+That time has three parts: the endpoint's answer time, a; our own time per event, o, which is marking the event delivered (a durable commit) and looking up the user's next event; and the retries. When a share p of attempts get a 500, each failure costs another attempt plus the wait before it, and the first retry waits 20 ms (see the retry entry). On average one event takes
 
-After an outage of D seconds, a user sending r events a second needs r × (D + 300) ÷ 300 events a second to clear its backlog and keep up with new events within the 5 minutes the brief allows. After a 5-minute outage that is 2r: 60 a second for a user sending 30, which needs answers in about 14 ms. Across all users it is 60,000 events in 300 seconds, 200 a second, and 200 users in flight cover that even at 1-second answers. The heaviest user is the limit, and the total is not.
+T = (a + o) ÷ (1 − p) + p × 20 ms
 
-No design gets round this. The order rule forces one event at a time per user, and the brief sends one event per request. So the README assumes answers in about 14 ms or less when healthy. Requests over localhost usually take a few ms. If the endpoint rate limits us below 200 a second during recovery, nothing meets the 5 minutes after a 5-minute outage.
+The second retry, at 40 ms, comes up for a share p × p of events, small enough to leave out below 10%.
+
+We measured o on Docker Desktop on Windows with pgbench (a load tool that ships with Postgres). It ran the worker's statements over TCP against a host-network Postgres at 127.0.0.1:54329 holding 30,000 unsent events, with the index from the poll entry:
+
+```
+$ docker exec hn-pg pgbench -h 127.0.0.1 -p 54329 -U postgres -n -r -c 20 -j 20 -T 20 -f /tmp/step.sql postgres
+  4.210  UPDATE events SET delivered_at = now() WHERE event_id = 'e' || :s;
+  0.513  SELECT seq, received_at FROM events WHERE user_id = 'u' || :u AND delivered_at IS NULL ORDER BY created_at, seq LIMIT 1;
+```
+
+With one connection the same two statements took 2.958 ms and 0.599 ms. So o is about 3.6 ms with one connection and 4.7 ms with 20 at once, and the maths uses 5 ms. The figures for Linux come from the test rig.
+
+After an outage of D seconds, a user sending r events a second owes r × (D + 300) events by 5 minutes after recovery: its backlog plus what it sends in those 5 minutes. Retries are capped at 5 seconds, so the worker can notice recovery up to 5 seconds late, which leaves 295 seconds. For the heaviest user, taken as 30 a second, after a 5-minute outage that is 30 × 600 = 18,000 events in 295 seconds: 61 a second, so T must be 16.4 ms or less. These are the slowest endpoint answer times that still meet it, with o = 5 ms:
+
+| Share of attempts answered 500 | First retry after 0.5 s (old) | First retry after 20 ms (now) |
+|---|---|---|
+| 0% | 11.4 ms | 11.4 ms |
+| 2% | under 1 ms | 10.7 ms |
+| 10% | none | 8.0 ms |
+
+With the old waits, a 14 ms endpoint and 2% 500s give T of about 29.8 ms, and the heaviest user clears about 9,900 of its 18,000 events in time. With the 20 ms waits, T is about 19.8 ms and it clears about 14,900, still short. At 10 ms and 2%, T is about 15.7 ms and it clears all of them.
+
+In normal running, a user sending 30 a second needs T of 33.3 ms or less, which allows answers up to about 27 ms at 2% 500s.
+
+Across all users, a 5-minute outage means 60,000 events in 295 seconds, about 203 a second, and 200 users in flight cover that even at 1-second answers. The heaviest user is the limit, and the total is not.
+
+No design gets round this. The order rule forces one event at a time per user, and the brief sends one event per request. So the README assumes answers in about 10 ms or less when healthy, with 500s on at most a few percent of requests. Requests over localhost usually take a few ms. If the endpoint rate limits us below about 200 a second during recovery, nothing meets the 5 minutes after a 5-minute outage.
 
 ## 2026-11-18: A user waits while its oldest unsent event is under 1 second old
 
@@ -140,7 +160,9 @@ Those three fields are the ones the relay needs: event_id to store each event on
 
 The brief's table covers 200, 500, 429, no connection and slow. For everything else: any 2xx means saved. Any 5xx, any 3xx and any 4xx other than 429 mean not saved, and redirects are not followed. A refused connection or a failed connect means the request was never sent, so not saved. A connection lost after the request went out is the unknown case, covered in its own entry, and 429 has its own entry too.
 
-A not-saved event is retried after 0.5 seconds, then 1, 2 and 4, then every 5 seconds. With that cap the worker notices recovery within about 5 seconds, well inside the 5 minutes the brief allows.
+A not-saved event is retried after 20 ms, and the wait doubles on each failure in a row (40, 80, 160 ms and so on) up to 5 seconds. It goes back to 20 ms after a success. A single 500 then costs about 20 ms, and a long failure backs off to one try every 5 seconds per user within about 10 seconds. With that cap the worker notices recovery within about 5 seconds, well inside the 5 minutes the brief allows. A refused connection follows the same schedule: on localhost it costs well under 1 ms, so a 20 ms start is as cheap there as for a 500.
+
+Changed 2026-11-19 after review. The first version started at 0.5 seconds. With 2% of attempts answered 500, those waits alone made the heaviest user too slow to clear a 5-minute outage; the numbers are in the 10 ms entry.
 
 A 4xx other than 429 most likely means a bug of ours. Retrying it can hold up that user, and skipping the event breaks exactly once, so the worker keeps retrying and logs it loudly.
 
