@@ -73,13 +73,11 @@ i/-text w/-text attr/text=auto eol=lf   Tequity-take-home-Outbox-relay.pdf
 
 ## 2026-11-19: One worker process, with delivered_at as the only record of progress
 
-Events go in one table: `event_id` (primary key), `user_id`, `created_at`, `body bytea`, `received_at timestamptz DEFAULT now()`, `seq bigint GENERATED ALWAYS AS IDENTITY` and `delivered_at`. One worker process sends for every user, up to 200 at a time. Every 200 ms it polls for users with an event ready and runs a loop for each: send the oldest unsent event, wait for the answer, on a 2xx commit `delivered_at`, move on.
+Events go in one table: `event_id` (primary key), `user_id`, `created_at`, `body bytea`, `received_at timestamptz DEFAULT now()`, `seq bigint GENERATED ALWAYS AS IDENTITY` and `delivered_at`. One worker process sends for every user, up to 200 at a time: 200 events a second even at 1-second answers. It polls for users with an event ready, each poll starting 200 ms after the last one finished. A loop starts only if its user is not in the in-memory in-flight set at that moment, so one user never has two loops. Each loop looks up the user's oldest unsent event afresh, sends it, waits for the answer, commits `delivered_at` on a 2xx and moves on.
 
-Which users are in flight, paused or waiting to retry is kept in memory, since none of it has to survive a restart. After one, anything without `delivered_at` is sent again.
+In-flight users, pauses and retry waits live in memory and need not survive a restart; after one, anything without `delivered_at` is sent again.
 
-200 slots give 200 events a second even at 1-second answers, the rate a 5-minute outage needs.
-
-Dropped: several worker processes sharing users through locks, coordination that 100 events a second does not need.
+Dropped: several worker processes coordinating through locks, which 100 events a second does not need.
 
 ## 2026-11-19: delivered_at is committed before the next send, and never causes a resend
 
