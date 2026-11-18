@@ -246,11 +246,15 @@ The review also proposed stamping `attempt_started_at` on each event before send
 
 The earlier plans were 70 seconds, sized to a 60-second request timeout that no longer exists, and then 20 seconds, sized to the brief's 30-second window. The 20 seconds was dropped for the reason above.
 
-## 2026-11-18: A 429 pauses all sending for Retry-After
+## 2026-11-18: A 429 pauses only the user who got it, for Retry-After
 
-On any 429 the worker starts no new sends to the endpoint, for any user, until Retry-After seconds have passed. The pause is at least 1 second: a missing header, one that is not a whole number, and `Retry-After: 0` all give 1 second, so a 429 can never cause a tight loop. A 429 does not raise the retry wait from the retry entry; the Retry-After pause is the whole of its delay. (Added 2026-11-19 after review.) Sends already in progress carry on. A later 429 during a pause moves its end to whichever end is later. The event that got the 429 was not saved and goes out again after the pause.
+Changed 2026-11-19 after review. The first version paused all sending, for every user.
 
-The brief lists rate limiting next to down and slow, as a state of the endpoint, and nothing in it says the limit is per user. Pausing only the user who got the 429 would leave every other user firing into the limit. Light users waiting a few seconds is fine against the 30 seconds the brief allows.
+On a 429 the worker pauses only the user whose request got it, until Retry-After seconds have passed; other users keep sending. The pause is at least 1 second: a missing header, one that is not a whole number, and `Retry-After: 0` all give 1 second, so a 429 can never cause a tight loop. A 429 does not raise the retry wait from the retry entry; the Retry-After pause is the whole of its delay. The event that got the 429 was not saved and goes out again after the pause. The pause is kept in memory with the user's other waits.
+
+The brief does not say whether the limit is per user or for the whole endpoint, and pausing only the user who got the 429 works under both. If the limit is per user, a heavy user hitting it every second leaves everyone else alone; a pause for all would stall every other user too, and they would miss the 30 seconds. If the limit covers the whole endpoint, each user that hits it pauses itself, and the load drops on its own, at the cost of a few extra 429s that save nothing.
+
+The first version paused everyone, on the grounds that the brief lists rate limiting next to down and slow, as a state of the endpoint, and that per-user pauses leave other users firing into the limit. The per-user case above is the one that breaks a pass condition, so per user wins.
 
 ## 2026-11-18: The API and worker start once Postgres is healthy
 
