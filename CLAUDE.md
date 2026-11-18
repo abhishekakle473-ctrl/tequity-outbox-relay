@@ -2,6 +2,8 @@
 
 This repo is a take-home for Tequity. The brief is Tequity-take-home-Outbox-relay.pdf in the repo root, and nobody ever edits it. It asks for an intake API on port 8080 that stores each event in Postgres before answering, and workers that pass every stored event on to Tequity's endpoint on port 9000, exactly once and in created_at order per user, while that endpoint fails, rate limits, slows down or goes away. The graders clone the repo onto a clean Linux machine and run `docker compose up`. They install nothing else and change nothing.
 
+Every session starts by reading docs/problem.md, the problem statement all design work traces back to.
+
 The full AI chat history goes to Tequity unedited, along with the git history. Write every chat reply and every commit knowing they will see it.
 
 ## Design comes first
