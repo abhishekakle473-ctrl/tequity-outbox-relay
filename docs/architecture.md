@@ -4,22 +4,18 @@ It follows docs/decisions.md; brackets start each governing entry's title.
 
 ## Parts
 
-```
-All containers: network_mode host.
+Every container uses host networking, so they share one localhost. In tests, rig/compose.yaml stands in for both Tequity parts.
 
- load generator --HTTP POST--> intake API :8080
-                                   | SQL insert
-                                   v
-                     Postgres 127.0.0.1:54329 (volume pgdata)
-                                   ^ SQL poll, next event, delivered_at
-                                   |
-                               worker (poll + up to 200 user loops)
-                                   | HTTP POST, raw bytes
-                                   v
-                               endpoint :9000
-
-Tests: rig/compose.yaml replaces both Tequity parts; their
-NDJSON logs go to the checker.
+```mermaid
+flowchart LR
+  subgraph host["host network, one localhost"]
+    LG["load generator<br/>(Tequity, or rig)"] -->|"HTTP POST /events"| API["intake API :8080"]
+    API -->|"SQL insert"| PG[("Postgres 127.0.0.1:54329<br/>volume pgdata")]
+    W["worker<br/>poll, up to 200 user loops"] -->|"SQL poll, next event, delivered_at"| PG
+    W -->|"HTTP POST /events, stored bytes"| EP["endpoint :9000<br/>(Tequity, or rig fake)"]
+  end
+  LG -.->|"loadgen.ndjson"| CK["rig checker"]
+  EP -.->|"endpoint.ndjson, modes.ndjson"| CK
 ```
 
 ## Life of one event
@@ -36,6 +32,35 @@ NDJSON logs go to the checker.
 7. Commit `delivered_at`, retrying only the write with the same waits, inside the send step so its errors never reach the loop's catch; then back to 5. [delivered_at is committed]
 8. Crash or kill during 6 or 7: the event is resent on restart, possibly saved twice. SIGTERM: no new sends, in-flight sends and writes finish, compose kills at 120 s. [A normal stop]
 9. Restart: both processes retry Postgres until it answers. [Startup waits]
+
+```mermaid
+sequenceDiagram
+  participant L as load generator
+  participant A as intake API
+  participant P as Postgres
+  participant W as worker
+  participant E as endpoint
+  L->>A: POST /events
+  A->>P: INSERT ... ON CONFLICT (event_id) DO NOTHING
+  A-->>L: 200 after the commit
+  W->>P: poll: user's oldest unsent event, over 1 s old
+  W->>E: POST stored bytes
+  alt 2xx
+    E-->>W: 200 (status line decides)
+    W->>P: commit delivered_at, then the user's next event
+  else 500 or any other status
+    E-->>W: 500
+    W->>W: wait 20 ms, doubling to 5 s, then send again
+  else 429
+    E-->>W: 429, Retry-After
+    W->>W: loop ends, user paused max(1, Retry-After) s
+  else connection lost before a status line
+    W->>W: "No connection: not saved", send again
+  else worker crashes before delivered_at commits
+    W->>P: after restart the event is still unsent
+    W->>E: sent again, possibly saved twice
+  end
+```
 
 ## Files
 
