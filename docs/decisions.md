@@ -119,3 +119,7 @@ The other option was storing created_at as a number of nanoseconds, which needs 
 The body of each post is stored as `bytea` (raw bytes), exactly as it arrived, and the worker posts those bytes with `Content-Type: application/json`. Intake still parses the JSON once, to check it and to pull out event_id, user_id and created_at into their own columns.
 
 The other option was a `jsonb` column (Postgres's parsed JSON type) and sending what Postgres gives back. jsonb reorders keys, drops duplicate keys and changes spacing, so the body sent could differ from the one received, and the brief asks for the same body.
+
+## 2026-11-18: event_id is the primary key, and repeats are skipped
+
+event_id is the primary key of the events table, and intake inserts with `ON CONFLICT (event_id) DO NOTHING`. Two posts of the same event, even at the same moment on separate connections, both get a 200, and Postgres makes sure only one row exists. The brief says Tequity may send the same event more than once with the same event_id, so a repeat is normal and gets the same answer as the first.

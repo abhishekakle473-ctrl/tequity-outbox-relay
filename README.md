@@ -11,6 +11,7 @@
 - A user's events wait while that user's oldest unsent event, by created_at, arrived less than 1 second ago. A later event never goes out while an earlier one is still inside its hold. An earlier event that arrives after a later one was already sent still goes out, late, and is logged.
 - created_at has at most 6 decimal places of seconds. It is stored as a Postgres timestamp, which keeps microseconds, and two events of one user that tie are sent in arrival order.
 - "The same body" in the brief means the same bytes. Each body is stored as raw bytes and sent unchanged, with `Content-Type: application/json`.
+- Two posts with the same event_id are one event. event_id is the primary key and the insert skips duplicates, so both posts get a 200 and only one row exists.
 
 ## What this is
 
