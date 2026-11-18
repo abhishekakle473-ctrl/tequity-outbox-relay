@@ -194,11 +194,19 @@ A connection that fails or closes after the request went out, before a status li
 
 The first version of this choice had a 60-second timeout and resent after it. It was dropped for the reason in the first paragraph.
 
-## 2026-11-18: A normal stop gives in-progress sends 20 seconds
+## 2026-11-18: A normal stop gives in-progress sends 120 seconds
 
-When the worker is told to stop, it starts no new sends and waits for the ones in progress. Compose's `stop_grace_period` for the worker is 20 seconds; after that the worker is killed. Any send cut off, by that kill or by a crash, has no `delivered_at`, so it is sent again on restart and may be saved twice. A 200 that arrives just before a crash, ahead of the commit of `delivered_at`, has the same result.
+Changed 2026-11-19 after review. The first version gave 20 seconds.
 
-Sends have no overall timeout, so the grace period cannot wait for every send to end on its own. While the worker is stopping, no user moves forward, and the brief allows 30 seconds from our 2xx. 20 seconds lets most slow answers finish and leaves time to restart and catch up. The earlier plan was 70 seconds, sized to a 60-second request timeout that no longer exists.
+When the worker gets SIGTERM, it starts no new sends and waits for the ones in progress, then exits as soon as the last one has its answer and its `delivered_at` write. Compose's `stop_grace_period` for the worker is 120 seconds; after that the worker is killed. Any send cut off, by that kill or by a crash, has no `delivered_at`, so it is sent again on restart and may be saved twice. A 200 that arrives just before a crash, ahead of the commit of `delivered_at`, has the same result.
+
+A short grace period is a timeout-then-resend in another form: a slow send killed at the deadline is resent on restart, which is the double save the no-timeout entry rules out. With 120 seconds, only a send slower than two minutes is cut off. The worker exits as soon as its sends finish, so the full 120 seconds is spent only when a send is that slow, and then a slow stop is the price of avoiding a double save.
+
+Two things in the Go code and image make this work. The HTTP call and the `delivered_at` write run on a context that SIGTERM does not cancel (`context.WithoutCancel`), so the stop signal cannot abort the send we are waiting for or the write after it. And the image starts the binary with an exec-form `ENTRYPOINT ["/relay", ...]`, so SIGTERM reaches Go at all; with the shell form, `/bin/sh` is process 1 and does not pass the signal on.
+
+The review also proposed stamping `attempt_started_at` on each event before sending it, so that a restart could log every event whose outcome is unknown. We left that out. pgbench measured the stamp, even with a non-durable commit, at about 1.0 to 1.2 ms per event: BEGIN, SET LOCAL synchronous_commit = off, UPDATE and COMMIT. That would raise our time per event from about 5 ms to 6 ms and lower the endpoint speed the heaviest user needs from about 10.7 ms to about 9.7 ms (see the 10 ms entry), all for a log line after a crash. At startup the worker logs how many events are unsent instead.
+
+The earlier plans were 70 seconds, sized to a 60-second request timeout that no longer exists, and then 20 seconds, sized to the brief's 30-second window. The 20 seconds was dropped for the reason above.
 
 ## 2026-11-18: A 429 pauses all sending for Retry-After
 
