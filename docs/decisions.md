@@ -107,3 +107,9 @@ Events can reach us out of created_at order, for example over parallel connectio
 The first version of this choice held each event on its own arrival time. That had an order bug: a later event could go out while an earlier one was still held. The hold now applies to the user, keyed on its oldest unsent event.
 
 Sending at once, with no hold, was the other option. It sends a slightly late earlier event after a later one. An earlier event that arrives after a later one has already been sent still goes out once its second has passed, and the worker logs it. It is out of order, but sent: dropping it would break exactly once.
+
+## 2026-11-18: created_at is a Postgres timestamp, with ties broken by arrival order
+
+created_at is parsed and stored as a Postgres `timestamptz`, which keeps microseconds. The brief's example has 3 decimal places, and the README assumes at most 6. If finer digits ever round two events of one user to the same value, they go out in the order they reached us. There is no unique rule on (user_id, created_at), so a tie can never cause an event to be refused.
+
+The other option was storing created_at as a number of nanoseconds, which needs our own parsing code for a case the brief's example does not suggest.

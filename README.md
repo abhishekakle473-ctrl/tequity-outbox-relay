@@ -9,6 +9,7 @@
 - One worker process sends for every user, up to 200 users at a time. An event's `delivered_at` is the only record of progress: anything without it gets sent.
 - When healthy, Tequity's endpoint answers in about 14 ms or less. Taking the heaviest user as 30 of the 100 events a second, that is the speed it needs to clear the backlog of a 5-minute outage within 5 minutes of recovery. If the endpoint rate limits us below 200 events a second during recovery, no design meets that.
 - A user's events wait while that user's oldest unsent event, by created_at, arrived less than 1 second ago. A later event never goes out while an earlier one is still inside its hold. An earlier event that arrives after a later one was already sent still goes out, late, and is logged.
+- created_at has at most 6 decimal places of seconds. It is stored as a Postgres timestamp, which keeps microseconds, and two events of one user that tie are sent in arrival order.
 
 ## What this is
 
