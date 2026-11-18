@@ -97,3 +97,13 @@ In normal running, a user sending 30 events a second needs answers in about 31 m
 After an outage of D seconds, a user sending r events a second needs r × (D + 300) ÷ 300 events a second to clear its backlog and keep up with new events within the 5 minutes the brief allows. After a 5-minute outage that is 2r: 60 a second for a user sending 30, which needs answers in about 14 ms. Across all users it is 60,000 events in 300 seconds, 200 a second, and 200 users in flight cover that even at 1-second answers. The heaviest user is the limit, and the total is not.
 
 No design gets round this. The order rule forces one event at a time per user, and the brief sends one event per request. So the README assumes answers in about 14 ms or less when healthy. Requests over localhost usually take a few ms. If the endpoint rate limits us below 200 a second during recovery, nothing meets the 5 minutes after a 5-minute outage.
+
+## 2026-11-18: A user waits while its oldest unsent event is under 1 second old
+
+The worker looks at each user's oldest unsent event by created_at. If that event arrived less than 1 second ago, the whole user waits. No later event of that user goes out while an earlier one is still inside its hold. The same check runs before every send in a user's loop, so an earlier event that arrives mid-loop stops the loop until its second has passed, and then goes out first.
+
+Events can reach us out of created_at order, for example over parallel connections. The hold lets a slightly late earlier event take its place, and costs 1 of the 30 seconds the brief allows.
+
+The first version of this choice held each event on its own arrival time. That had an order bug: a later event could go out while an earlier one was still held. The hold now applies to the user, keyed on its oldest unsent event.
+
+Sending at once, with no hold, was the other option. It sends a slightly late earlier event after a later one. An earlier event that arrives after a later one has already been sent still goes out once its second has passed, and the worker logs it. It is out of order, but sent: dropping it would break exactly once.
