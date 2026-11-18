@@ -113,3 +113,9 @@ Sending at once, with no hold, was the other option. It sends a slightly late ea
 created_at is parsed and stored as a Postgres `timestamptz`, which keeps microseconds. The brief's example has 3 decimal places, and the README assumes at most 6. If finer digits ever round two events of one user to the same value, they go out in the order they reached us. There is no unique rule on (user_id, created_at), so a tie can never cause an event to be refused.
 
 The other option was storing created_at as a number of nanoseconds, which needs our own parsing code for a case the brief's example does not suggest.
+
+## 2026-11-18: Bodies are stored as raw bytes and sent unchanged
+
+The body of each post is stored as `bytea` (raw bytes), exactly as it arrived, and the worker posts those bytes with `Content-Type: application/json`. Intake still parses the JSON once, to check it and to pull out event_id, user_id and created_at into their own columns.
+
+The other option was a `jsonb` column (Postgres's parsed JSON type) and sending what Postgres gives back. jsonb reorders keys, drops duplicate keys and changes spacing, so the body sent could differ from the one received, and the brief asks for the same body.
