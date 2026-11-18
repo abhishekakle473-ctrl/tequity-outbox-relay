@@ -89,7 +89,7 @@ Dropped: committing while the next event is sent, which would save about 5 ms pe
 
 ## 2026-11-19: Connection pools are sized by hand
 
-The worker's `pg` Pool has `max: 20` and the API's `max: 30`, 50 of Postgres's 100. `pg` defaults to 10, too few for 200 user loops. Each loop takes a connection for one statement at a time through `pool.query`, never while waiting on port 9000. Calls to 9000 share one `http.Agent` with `keepAlive: true` and `maxFreeSockets: 200`, so sends reuse their TCP connections.
+The worker's `pg` Pool has `max: 20` and the API's `max: 30`, 50 of Postgres's 100. `pg` defaults to 10, too few for 200 user loops. Each loop takes a connection for one statement at a time through `pool.query`, never while waiting on port 9000. Calls to 9000 share one `new http.Agent({ keepAlive: true })`, so sends reuse their TCP connections; its defaults already keep up to 256 idle sockets and turn TCP keepalive on.
 
 Dropped: one large pool for both processes, where a busy worker could starve intake.
 
@@ -179,8 +179,7 @@ Dropped: stamping `attempt_started_at` before each send to list unknown outcomes
 
 ## 2026-11-19: A send has no overall time limit
 
-The brief says a slow answer is still coming and a 200 means saved, so a timeout and resend is the one way to save twice on an endpoint that is slow but alive. Sends use `http.request`, never `fetch`, which follows redirects and has a hidden 300-second limit; its `timeout` option stays unused, since it fires during a slow answer. Connecting has no timer: on localhost a connection is accepted or refused at once. An error before the socket connected means not sent, after it unknown. `socket.setKeepAlive(true, 10000)` is on as a backstop, with Linux's own probe interval and count.
-
+The brief says a slow answer is still coming and a 200 means saved, so a timeout and resend is the one way to save twice on an endpoint that is slow but alive. Sends use `http.request`, never `fetch`, which follows redirects and has a hidden 300-second limit; its `timeout` option stays unused, since it fires during a slow answer. Connecting has no timer: on localhost a connection is accepted or refused at once. An error before the socket connected means not sent, after it unknown.
 An endpoint that never answers keeps that one user waiting; the brief's table has no such endpoint.
 
 Dropped: a 60-second timeout, then a 120-second ceiling, each followed by a resend; and a 2-second connect timer, which a reused keep-alive socket never clears, so it would kill slow answers.
