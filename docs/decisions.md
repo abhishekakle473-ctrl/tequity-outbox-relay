@@ -138,6 +138,22 @@ WHERE received_at < now() - interval '1 second' AND user_id <> ALL($1);
 
 `$1` is the list of users the worker is already sending for. (Added 2026-11-19 after review: the first version named no arrival time.)
 
+The query runs every 200 ms, and the table grows with every delivered row, so it has a partial index that holds unsent rows only:
+
+```sql
+CREATE INDEX events_pending ON events (user_id, created_at, seq) INCLUDE (received_at) WHERE delivered_at IS NULL;
+```
+
+The index order matches the DISTINCT ON order, and received_at is included, so Postgres answers from the index alone. On a host-network Postgres 16 with 1,000 unsent events, `EXPLAIN (ANALYZE, BUFFERS)` showed:
+
+```
+->  Index Only Scan using events_pending on events (actual time=0.022..0.860 rows=999 loops=1)
+      Heap Fetches: 0
+Execution Time: 1.758 ms
+```
+
+The scan grows with the number of unsent events, about 0.9 ms per 1,000 here, so a 30,000-event backlog should take around 25 to 30 ms per poll, well under the 200 ms between polls. That figure is an estimate and the test rig will measure it. (Added 2026-11-19 after review.)
+
 Events can reach us out of created_at order, for example over parallel connections. The hold lets a slightly late earlier event take its place, and costs 1 of the 30 seconds the brief allows.
 
 The first version of this choice held each event on its own arrival time. That had an order bug: a later event could go out while an earlier one was still held. The hold now applies to the user, keyed on its oldest unsent event.
