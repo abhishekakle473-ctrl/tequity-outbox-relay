@@ -14,6 +14,7 @@
 - Two posts with the same event_id are one event. event_id is the primary key and the insert skips duplicates, so both posts get a 200 and only one row exists.
 - If an event_id arrives again with a different body, the first body stands. The repeat gets a 200 and is logged.
 - Intake answers 200 only after Postgres has committed the event. It answers 400 when the body is not a JSON object, or when event_id, user_id or created_at is missing, empty or unreadable, and 413 when the body is over 1 MB. `type` and `data` pass through unchecked.
+- Any 2xx from the endpoint means saved. Any other status, a refused connection or a failed connect means not saved, and the event is retried after 0.5 seconds, doubling up to 5 seconds. Redirects are not followed.
 
 ## What this is
 
