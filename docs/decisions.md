@@ -29,9 +29,13 @@ Server: SimpleHTTP/0.6 Python/3.12.16
 
 `netstat -tln` in the server container showed `127.0.0.1:9000 ... LISTEN`. The 127.0.0.1 case is still unproven on plain Docker on Linux, which is how Tequity grades. We prove it when the test rig runs on Linux.
 
+Addresses, added 2026-11-19 after review. The API listens on `:8080`, every address, because the load generator's `localhost` may mean ::1 or 127.0.0.1. The worker posts to `http://localhost:9000/events` as the brief writes it. Go's dialer tries every address `localhost` gives, so if the endpoint listens only on 127.0.0.1, a refused ::1 falls through to 127.0.0.1 within the 2-second connect timeout. Postgres is reached at `127.0.0.1:54329`, never `localhost`, since it listens on 127.0.0.1 only. Its password is written in the compose file, since the graders will not have a `.env` file and Postgres accepts no connections from other machines.
+
+All of this assumes the graders run plain Docker Engine as root, the normal install, where host networking is the machine's own network. Docker's documentation says rootless Docker keeps `--net=host` inside its own network namespace, and Docker Desktop for Linux runs containers in a VM, as on Windows. In either, our containers would not reach the machine's localhost.
+
 ## 2026-11-18: Postgres runs on host networking at 127.0.0.1:54329
 
-Postgres also runs with host networking, started as `postgres -p 54329 -c listen_addresses=127.0.0.1`. The API and worker connect to it at localhost:54329.
+Postgres also runs with host networking, started as `postgres -p 54329 -c listen_addresses=127.0.0.1`. The API and worker connect to it at 127.0.0.1:54329, never `localhost`, which can mean ::1 first (changed 2026-11-19 after review).
 
 With host networking, Postgres takes a port on the grading machine itself. The default, 5432, may already be in use there. It is on the laptop this was built on, where another project's Postgres container holds 127.0.0.1:5432. Port 54329 is unlikely to be taken. Listening on 127.0.0.1 keeps Postgres out of reach of other machines. If 54329 is taken after all, Postgres fails to start and `docker compose up` shows the error.
 
