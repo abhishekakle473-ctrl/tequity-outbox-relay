@@ -49,3 +49,17 @@ $ docker run --rm --network host -e PGPASSWORD=check postgres:16-alpine sh -c "u
 ```
 
 `netstat -tln` showed `127.0.0.1:54329 ... LISTEN` next to the other project's `127.0.0.1:5432 ... LISTEN`.
+
+## 2026-11-18: The test rig runs in host-network containers
+
+The test rig, meaning a fake endpoint on port 9000, a load generator and a checker, runs as containers with host networking. None of it runs as a program on Windows.
+
+On Docker Desktop for Windows, localhost does not connect Windows and host-network containers in either direction. A host-network container cannot reach a Windows server on localhost (first entry above), and Windows cannot reach a host-network container's port:
+
+```
+$ docker run -d --name hn-srv8080 --network host python:3.12-alpine python -m http.server 8080
+$ curl.exe -sS -i --max-time 10 http://localhost:8080/        (on Windows)
+curl: (7) Failed to connect to localhost port 8080 after 2237 ms: Could not connect to server
+```
+
+Docker Desktop runs containers in a Linux VM, and host-network containers inside that VM reach each other on localhost (the 127.0.0.1:9000 test in the first entry). That matches the grading machine, where Tequity's endpoint and load generator talk to us over the machine's own localhost. On Linux, the same rig runs unchanged.
