@@ -6,13 +6,13 @@ For agentic workers: use superpowers:subagent-driven-development or superpowers:
 
 **Architecture:** docs/architecture.md: parts, the life of one event, files and contracts.
 
-**Tech stack:** Node.js 24 (exact patch tag), plain JavaScript, `pg` the only dependency, Postgres `16.16-alpine`, Docker Compose with host networking, `node --test` for unit tests.
+**Tech stack:** TypeScript run directly by Node.js 24 (`node:24.22.3-alpine3.24`), erasable syntax only, `pg` the only runtime dependency, `typescript` 7.0.2 and `@types/node` 24.19.2 as dev dependencies, Postgres `16.16-alpine`, Docker Compose with host networking, `node --test` and `tsc --noEmit` for unit tests.
 
 **Spec:** docs/decisions.md, docs/problem.md, README.md.
 
 ## Global constraints
 
-Every unit follows CLAUDE.md and docs/decisions.md. Ports are 8080 (intake), 9000 (endpoint) and 127.0.0.1:54329 (Postgres). The relay keeps all state in Postgres; the rig's NDJSON logs are test output. No shell scripts; compose and the Dockerfile hold their commands inline. Each unit is one commit that carries its own doc edits, and its message names the test run that proved it and what that run printed.
+Every unit follows CLAUDE.md and docs/decisions.md. Ports are 8080 (intake), 9000 (endpoint) and 127.0.0.1:54329 (Postgres). The relay keeps all state in Postgres; the rig's NDJSON logs are test output. No shell scripts; compose and the Dockerfile hold their commands inline. Every unit passes `npx tsc --noEmit` with the strict tsconfig as well as its tests, and no `.js` file is committed. Each unit is one commit that carries its own doc edits, and its message names the test run that proved it and what that run printed.
 
 ## The checker's checks
 
@@ -69,8 +69,8 @@ These inputs are implied by the spec but easy to miss. Each one has a test in th
 ## Units
 
 ### R1 Fake endpoint
-Builds `rig/endpoint.js` and `rig/endpoint.test.js`: plays a scenario's steps on :9000 and writes `endpoint.ndjson` and `modes.ndjson`.
-Done when `node --test rig/endpoint.test.js` shows that:
+Builds `rig/endpoint.ts` and `rig/endpoint.test.ts`: plays a scenario's steps on :9000 and writes `endpoint.ndjson` and `modes.ndjson`.
+Done when `node --test rig/endpoint.test.ts` shows that:
 - the same seed gives the same answer sequence
 - `down` closes the listener so connects are refused
 - `slow` delays by `latency_ms`
@@ -81,8 +81,8 @@ Done when `node --test rig/endpoint.test.js` shows that:
 Parallel with R2, R3, U1, U2 and U4.
 
 ### R2 Load generator
-Builds `rig/loadgen.js` and `rig/loadgen.test.js`: posts a scenario's load to :8080 and writes `loadgen.ndjson`.
-Done when `node --test rig/loadgen.test.js` shows that:
+Builds `rig/loadgen.ts` and `rig/loadgen.test.ts`: posts a scenario's load to :8080 and writes `loadgen.ndjson`.
+Done when `node --test rig/loadgen.test.ts` shows that:
 - the same seed gives the same events
 - each user's created_at strictly increases
 - no second has more than `rate` posts
@@ -92,8 +92,8 @@ Done when `node --test rig/loadgen.test.js` shows that:
 Parallel with R1 and R3.
 
 ### R3 Checker
-Builds `rig/check.js` and `rig/check.test.js`: the five checks above.
-Done when `node --test rig/check.test.js` shows that:
+Builds `rig/check.ts` and `rig/check.test.ts`: the five checks above.
+Done when `node --test rig/check.test.ts` shows that:
 - a clean hand-made run passes all five
 - one hand-made violation per check fails exactly that check, naming the event in `detail`
 - empty logs fail all five with "nothing to judge"
@@ -119,8 +119,8 @@ Done when:
 Parallel with the rig units.
 
 ### U2 Intake validation
-Builds `validate` in `src/intake.js` and `test/intake.test.js`, with no database.
-Done when `node --test test/intake.test.js` passes a table of cases:
+Builds `validate` in `src/intake.ts` and `test/intake.test.ts`, with no database.
+Done when `node --test test/intake.test.ts` passes a table of cases:
 - broken JSON
 - a JSON array
 - each field missing, empty or not a string
@@ -131,8 +131,8 @@ Done when `node --test test/intake.test.js` passes a table of cases:
 Parallel with everything.
 
 ### U3 Intake API
-Builds `src/db.js`, `insert` in `src/intake.js`, `src/api.js`, `test/api.test.js` and the api service.
-Done when `node --test test/api.test.js` against the compose Postgres shows:
+Builds `src/db.ts`, `insert` in `src/intake.ts`, `src/api.ts`, `test/api.test.ts` and the api service.
+Done when `node --test test/api.test.ts` against the compose Postgres shows:
 - the row is committed before the 200
 - two concurrent posts of one event_id give one row and two 200s
 - a different body keeps the first and is logged
@@ -144,8 +144,8 @@ Done when `node --test test/api.test.js` against the compose Postgres shows:
 Then `SCENARIO=healthy` passes `intake_up`, which goes into the baseline. Needs U1, U2 and R4.
 
 ### U4 Send
-Builds `src/send.js` and `test/send.test.js`, against an in-process test server.
-Done when `node --test test/send.test.js` shows:
+Builds `src/send.ts` and `test/send.test.ts`, against an in-process test server.
+Done when `node --test test/send.test.ts` shows:
 - a 200 with a cut body is saved
 - 500, 302 and 404 are retry
 - 429 is a pause with `Retry-After` 7, 0, missing or `abc` giving 7, 1, 1 and 1
@@ -157,8 +157,8 @@ Done when `node --test test/send.test.js` shows:
 Parallel with everything.
 
 ### U5 SQL
-Builds `src/sql.js` and `test/sql.test.js`, against the compose Postgres.
-Done when `node --test test/sql.test.js` shows:
+Builds `src/sql.ts` and `test/sql.test.ts`, against the compose Postgres.
+Done when `node --test test/sql.test.ts` shows:
 - a user whose oldest event is held is not returned, even with a ready second event
 - excluded users are left out before the limit
 - the longest-waiting user comes first
@@ -170,8 +170,8 @@ Done when `node --test test/sql.test.js` shows:
 Needs U1.
 
 ### U6 Worker
-Builds `src/worker.js`, `test/worker.test.js` and the worker service.
-Done when `node --test test/worker.test.js`, with fake send and SQL, shows:
+Builds `src/worker.ts`, `test/worker.test.ts` and the worker service.
+Done when `node --test test/worker.test.ts`, with fake send and SQL, shows:
 - a user that two polls both return still has one loop
 - a poll starts only after the last one finished
 - retry waits run 20, 40 and so on up to 5000 ms, and reset after a success

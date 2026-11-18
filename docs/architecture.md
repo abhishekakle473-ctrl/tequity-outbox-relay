@@ -40,17 +40,17 @@ NDJSON logs go to the checker.
 ## Files
 
 ```
-compose.yaml  Dockerfile  package.json  package-lock.json  .gitattributes
+compose.yaml  Dockerfile  package.json  package-lock.json  tsconfig.json
 db/init.sql          events table and index
-src/db.js            Pool with error handler, connect retry
-src/intake.js        validate(buf) -> {ok,fields} | {status,reason}; insert(pool,buf,fields) -> status
-src/api.js           HTTP server :8080, keepAliveTimeout 65 s, SIGTERM
-src/send.js          post(agent,buf) -> {kind:"saved"} | {kind:"pause",seconds} | {kind:"retry"}
-src/sql.js           readyUsers(pool,excluded,limit), oldestUnsent(pool,user), markDelivered(pool,id)
-src/worker.js        poll, user loops, waits, SIGTERM; nextWait(failures) pure
-test/*.test.js       node --test, one file per src file
+src/db.ts            Pool with error handler, connect retry
+src/intake.ts        validate(buf) -> {ok,fields} | {status,reason}; insert(pool,buf,fields) -> status
+src/api.ts           HTTP server :8080, keepAliveTimeout 65 s, SIGTERM
+src/send.ts          post(agent,buf) -> {kind:"saved"} | {kind:"pause",seconds} | {kind:"retry"}
+src/sql.ts           readyUsers(pool,excluded,limit), oldestUnsent(pool,user), markDelivered(pool,id)
+src/worker.ts        poll, user loops, waits, SIGTERM; nextWait(failures) pure
+test/*.test.ts       node --test and tsc --noEmit, one file per src file
 rig/compose.yaml  rig/Dockerfile
-rig/endpoint.js  rig/loadgen.js  rig/check.js  rig/check.test.js
+rig/types.ts (log lines, scenario)  rig/rng.ts  rig/endpoint.ts  rig/loadgen.ts  rig/check.ts
 rig/scenarios/*.json  rig/baseline.json
 ```
 
@@ -65,4 +65,4 @@ Rig, NDJSON, times in epoch milliseconds:
 - `endpoint.ndjson`: `t, event_id, user_id, created_at, body_sha256, mode, status, saved`.
 - `modes.ndjson`: `t, mode, users` on every change, including `relay_stopped` while a scenario stops our services.
 - Scenario: one seeded JSON file holding the load and timed endpoint steps; plan.md defines every field.
-- `check.js` prints one JSON line per check, `{check, pass, detail}`, and exits 0 only if all pass.
+- `check.ts` prints one JSON line per check, `{check, pass, detail}`, and exits 0 only if all pass.
