@@ -126,6 +126,10 @@ With the old waits, a 14 ms endpoint and 2% 500s give T of about 29.8 ms, and th
 
 In normal running, a user sending 30 a second needs T of 33.3 ms or less, which allows answers up to about 27 ms at 2% 500s.
 
+The 30 a second is our guess: the brief says only that a few users send far more than the rest. A user sending 50 a second owes 50 × 600 = 30,000 events in 295 seconds after a 5-minute outage, so T must be 9.8 ms or less, which needs answers in about 4.2 ms at 2% 500s and 4.8 ms with none. The test rig measures the endpoint's answer time, and the README gives the measured figure once we have it.
+
+After recovery, a heavy user's new events queue behind its backlog, since its events go out in order, and can wait close to 5 minutes. That passes only under our interpretation of the brief: its 5-minute rule covers every event held up by the outage, and its 30-second rule applies again once that user's backlog is clear. No design can do better, since sending the new events first would break the order rule. (Both paragraphs added 2026-11-19 after review.)
+
 Across all users, a 5-minute outage means 60,000 events in 295 seconds, about 203 a second, and 200 users in flight cover that even at 1-second answers. The heaviest user is the limit, and the total is not.
 
 No design gets round this. The order rule forces one event at a time per user, and the brief sends one event per request. So the README assumes answers in about 10 ms or less when healthy, with 500s on at most a few percent of requests. Requests over localhost usually take a few ms. If the endpoint rate limits us below about 200 a second during recovery, nothing meets the 5 minutes after a 5-minute outage.
