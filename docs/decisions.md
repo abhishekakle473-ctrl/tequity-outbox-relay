@@ -129,3 +129,9 @@ event_id is the primary key of the events table, and intake inserts with `ON CON
 When a post repeats an event_id we already have but carries a different body, we keep the first body, answer 200 and log it. The brief says a resent event keeps the same event_id, so we treat the post as a resend.
 
 A 409 (a "conflict" error) was the other option. It might make Tequity's load generator retry forever, or count an event we already promised to deliver as refused. Overwriting an unsent event with the new body was the third, but it means the body sent depends on timing.
+
+## 2026-11-18: Intake answers 200 after the commit, and 400 to events we could not send
+
+Intake answers 200 only after Postgres has committed the event. It answers 400 when the body is not a JSON object, or when event_id, user_id or created_at is missing, empty or unreadable, and 413 ("too large") when the body is over 1 MB. It does not check `type` or `data`; they pass through to the endpoint as they came.
+
+Those three fields are the ones the relay needs: event_id to store each event once, user_id and created_at to send in order. A 2xx for an event we cannot send would break the brief's promise that a 2xx reaches the endpoint. A 400 makes no promise, so it cannot break exactly once.

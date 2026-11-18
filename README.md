@@ -13,6 +13,7 @@
 - "The same body" in the brief means the same bytes. Each body is stored as raw bytes and sent unchanged, with `Content-Type: application/json`.
 - Two posts with the same event_id are one event. event_id is the primary key and the insert skips duplicates, so both posts get a 200 and only one row exists.
 - If an event_id arrives again with a different body, the first body stands. The repeat gets a 200 and is logged.
+- Intake answers 200 only after Postgres has committed the event. It answers 400 when the body is not a JSON object, or when event_id, user_id or created_at is missing, empty or unreadable, and 413 when the body is over 1 MB. `type` and `data` pass through unchecked.
 
 ## What this is
 
