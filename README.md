@@ -6,6 +6,7 @@
 - Port 54329 on the grading machine is free. Postgres runs with host networking on that port, listening on 127.0.0.1 only, so it cannot clash with a Postgres already using the default port 5432 and cannot be reached from other machines.
 - Our test rig (a fake endpoint on 9000, a load generator and a checker) runs as containers with host networking, never as programs on the developer's machine. On Docker Desktop for Windows, host-network containers and Windows cannot reach each other on localhost, while containers inside Docker Desktop's Linux VM can, the same way they do on a Linux machine.
 - The relay and its test rig are written in Go. Postgres is version 16, with the image tag pinned.
+- One worker process sends for every user, up to 200 users at a time. An event's `delivered_at` is the only record of progress: anything without it gets sent.
 
 ## What this is
 

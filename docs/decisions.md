@@ -71,3 +71,11 @@ The intake API, the worker and the test rig are written in Go. Postgres is versi
 The worker runs one goroutine (a cheap parallel task in Go) per user it is sending for, which fits the one-event-at-a-time-per-user rule. Go's standard library has an HTTP server and an HTTP client with exact control over timeouts, and timeouts decide when a send's outcome is unknown. The build is one binary with no runtime to install in the image.
 
 Python with asyncio was the close second: less code, fast enough for 100 events a second, but more packages to pin. Node is much like Python. Java and Kotlin bring bigger images and slower starts for no gain here. Postgres 16 is the version the host networking checks ran on.
+
+## 2026-11-18: One worker process, with delivered_at as the only record of progress
+
+Events go in one `events` table: event_id as the primary key, user_id, created_at, the body as received, an arrival number used to break ties, and `delivered_at`. A single worker process sends for all users. Every 200 ms it asks Postgres which users have an event ready to go (the 1-second hold decides "ready"). It skips users it is already sending for, and starts a loop for each of the others, up to 200 users at a time. A loop sends the user's oldest unsent event, waits for the answer, and on a 2xx sets `delivered_at`, commits and moves on to the next one.
+
+The worker keeps in memory which users are in flight, plus any pause or retry wait. None of that has to survive a restart. After one, anything without `delivered_at` is sent again, and the worst a forgotten wait costs is one extra 500 or 429.
+
+The other option was several worker processes splitting users between them through row locks or leases in Postgres. At 100 events a second one process has plenty of room, and with one there is nothing to coordinate. If it dies, Docker restarts it. The limit of 200 users in flight comes from the per-user maths: even at 1-second answers it gives 200 events a second in total, the rate needed to clear a 5-minute outage.
