@@ -165,3 +165,9 @@ Sends have no overall timeout, so the grace period cannot wait for every send to
 On any 429 the worker starts no new sends to the endpoint, for any user, until Retry-After seconds have passed. If the header is missing or is not a whole number, the pause is 1 second. Sends already in progress carry on. A later 429 during a pause moves its end to whichever end is later. The event that got the 429 was not saved and goes out again after the pause.
 
 The brief lists rate limiting next to down and slow, as a state of the endpoint, and nothing in it says the limit is per user. Pausing only the user who got the 429 would leave every other user firing into the limit. Light users waiting a few seconds is fine against the 30 seconds the brief allows.
+
+## 2026-11-18: The API and worker start once Postgres is healthy
+
+Postgres has a health check, `pg_isready -h 127.0.0.1 -p 54329`, and the API and worker wait for it with `depends_on: condition: service_healthy`. The tables come from one SQL file that Postgres runs on its first start, from `/docker-entrypoint-initdb.d`, so there is no migration tool. Every service has `restart: unless-stopped`.
+
+`docker compose up` starts containers in parallel, and Tequity's load generator could post before Postgres or the API is ready. The README assumes Tequity starts sending once our services show as running. A post refused in the first few seconds got no 2xx, so it carries no promise.
