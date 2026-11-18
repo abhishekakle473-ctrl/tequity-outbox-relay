@@ -143,3 +143,13 @@ The brief's table covers 200, 500, 429, no connection and slow. For everything e
 A not-saved event is retried after 0.5 seconds, then 1, 2 and 4, then every 5 seconds. With that cap the worker notices recovery within about 5 seconds, well inside the 5 minutes the brief allows.
 
 A 4xx other than 429 most likely means a bug of ours. Retrying it can hold up that user, and skipping the event breaks exactly once, so the worker keeps retrying and logs it loudly.
+
+## 2026-11-18: No overall timeout on a send; only a lost connection is resent
+
+A send has no overall timeout. The brief says a slow answer is still coming and a 200 at the end means saved. A timeout followed by a resend is the one way we would save an event twice on an endpoint that is slow but alive, so we always wait for the answer.
+
+The connect step has a 2-second timeout. A refused or failed connect means the request was never sent, so the event is not saved and is retried. TCP keepalive (the system sending small probes on an idle connection to check its other end is still there) is on: probes start after 10 seconds of silence, repeat every 5 seconds, and the connection fails after 3 missed probes. Keepalive catches a connection whose other end has vanished without closing it. An endpoint that is alive but slow still answers the probes, so its request keeps waiting.
+
+A connection that fails or closes after the request went out, before a full answer comes back, is the unknown case. We send the event again. The most likely cause is the endpoint dying mid-request, and that most likely saved nothing. Giving up was the other option, and it is wrong whenever nothing was saved. The HTTP client must never resend a POST on its own: Go's client only retries a POST when nothing at all was written, which is safe.
+
+The first version of this choice had a 60-second timeout and resent after it. It was dropped for the reason in the first paragraph.
