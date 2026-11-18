@@ -157,7 +157,7 @@ Dropped: a 409 for a different body, which could make the load generator retry f
 
 ## 2026-11-19: Intake answers 200 only after the commit
 
-Intake answers 200 only after Postgres has committed the event. It answers 400 to a body that is not a JSON object or lacks a non-empty event_id, user_id or created_at, 413 to a body over 1 MB, and 503 to any database error except a refused created_at cast. `type` and `data` pass through unchecked. Every 400 is logged with its reason.
+Intake answers 200 only after Postgres has committed the event. It answers 400 to a body that is not a JSON object or lacks a non-empty event_id, user_id or created_at, 413 to a body over 1 MB, and 503 to any database error except a refused created_at cast. `type` and `data` pass through unchecked. Every 400 is logged with its reason. The server sets `keepAliveTimeout` to 65 seconds and `headersTimeout` to 66: with Node's 5-second default, our server can close an idle connection just as the load generator reuses it, and that post fails unanswered.
 
 The relay needs those three fields to store each event once and send it in order. A 2xx promises delivery; a 400 or 503 promises nothing, so neither can break exactly once.
 
