@@ -123,3 +123,9 @@ The other option was a `jsonb` column (Postgres's parsed JSON type) and sending 
 ## 2026-11-18: event_id is the primary key, and repeats are skipped
 
 event_id is the primary key of the events table, and intake inserts with `ON CONFLICT (event_id) DO NOTHING`. Two posts of the same event, even at the same moment on separate connections, both get a 200, and Postgres makes sure only one row exists. The brief says Tequity may send the same event more than once with the same event_id, so a repeat is normal and gets the same answer as the first.
+
+## 2026-11-18: The first body stands when an event_id comes back different
+
+When a post repeats an event_id we already have but carries a different body, we keep the first body, answer 200 and log it. The brief says a resent event keeps the same event_id, so we treat the post as a resend.
+
+A 409 (a "conflict" error) was the other option. It might make Tequity's load generator retry forever, or count an event we already promised to deliver as refused. Overwriting an unsent event with the new body was the third, but it means the body sent depends on timing.

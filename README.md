@@ -12,6 +12,7 @@
 - created_at has at most 6 decimal places of seconds. It is stored as a Postgres timestamp, which keeps microseconds, and two events of one user that tie are sent in arrival order.
 - "The same body" in the brief means the same bytes. Each body is stored as raw bytes and sent unchanged, with `Content-Type: application/json`.
 - Two posts with the same event_id are one event. event_id is the primary key and the insert skips duplicates, so both posts get a 200 and only one row exists.
+- If an event_id arrives again with a different body, the first body stands. The repeat gets a 200 and is logged.
 
 ## What this is
 
