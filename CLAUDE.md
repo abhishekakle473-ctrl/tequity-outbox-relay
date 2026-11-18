@@ -14,6 +14,10 @@ No product code (the intake API and the workers) gets written until the design i
 
 When we settle an assumption or a design choice, the same commit adds it to the assumptions list at the top of README.md and adds a dated entry to docs/decisions.md saying what was decided and why. One decision per commit. The commit message states the decision, for example "Hold a user's later events while an earlier one has an unknown outcome". A message like "Update README and decisions.md" is never acceptable.
 
+## History is never rewritten
+
+The brief asks for the full git history, unsquashed. No squash, amend, rebase, reset or force-push, ever. A changed decision is a new commit that edits the decision entry in place, with a dated note saying what changed and why, and a message stating the new decision. One commit message was reworded with an amend on 2026-11-18, before anything was pushed (`a685113` became `900044d`); there will be no more.
+
 ## Postgres is the only state
 
 All state lives in Postgres: no Redis, Kafka or other queue, no files on disk, and nothing in process memory that has to survive a restart.
