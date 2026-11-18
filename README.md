@@ -18,7 +18,7 @@
 - A slow answer is always waited for. Sends have no overall timeout, only a 2-second connect timeout. TCP keepalive (the system checking an idle connection's other end is still there) makes a connection whose other end has vanished fail. That failure, like any connection lost after the request went out, means the outcome is unknown, and the event is sent again.
 - On a normal stop the worker starts no new sends and waits up to 20 seconds for the ones in progress. A send still going after that, or one cut short by a hard kill, is sent again on restart and may be saved twice.
 - A 429 means the whole endpoint is rate limiting. All new sends pause for its Retry-After seconds, or 1 second if the header is missing or not a whole number.
-- Tequity starts sending once `docker compose up` shows our services running. Posts in the first few seconds may be refused, and a refused post carries no 2xx promise.
+- Tequity starts sending once `docker compose up` shows our services running. Posts in the first few seconds may be refused, and a refused post carries no 2xx promise. Postgres keeps its data in a named volume, so stored events survive `docker compose down` and `up`. Only `down -v` deletes them, and a schema change needs it, since the init SQL runs only on an empty data folder.
 
 ## What this is
 

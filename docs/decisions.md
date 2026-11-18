@@ -170,4 +170,6 @@ The brief lists rate limiting next to down and slow, as a state of the endpoint,
 
 Postgres has a health check, `pg_isready -h 127.0.0.1 -p 54329`, and the API and worker wait for it with `depends_on: condition: service_healthy`. The tables come from one SQL file that Postgres runs on its first start, from `/docker-entrypoint-initdb.d`, so there is no migration tool. Every service has `restart: unless-stopped`.
 
+Postgres keeps its data in a named volume, `pgdata:/var/lib/postgresql/data`, and fsync and synchronous_commit stay at their defaults (on). Without a named volume, the postgres image's own volume is anonymous: after `docker compose down` and `up` the new container gets a new, empty one, and every unsent event we answered 2xx for is gone. Only `docker compose down -v` deletes the named volume. The init SQL runs only on an empty data folder, so a change to the schema needs `down -v` to take effect. (Added 2026-11-19 after review.)
+
 `docker compose up` starts containers in parallel, and Tequity's load generator could post before Postgres or the API is ready. The README assumes Tequity starts sending once our services show as running. A post refused in the first few seconds got no 2xx, so it carries no promise.
