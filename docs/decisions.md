@@ -164,6 +164,10 @@ Sending at once, with no hold, was the other option. It sends a slightly late ea
 
 created_at is parsed and stored as a Postgres `timestamptz`, which keeps microseconds. The brief's example has 3 decimal places, and the README assumes at most 6. If finer digits ever round two events of one user to the same value, they go out in the order they reached us. There is no unique rule on (user_id, created_at), so a tie can never cause an event to be refused.
 
+Intake parses created_at in Go, never in Postgres. It uses Go's RFC 3339 layout with fractional seconds (`time.RFC3339Nano`), which accepts `Z` and offsets such as `+05:30`. If the string has no time zone, it is taken as UTC. Postgres would take it in the session's zone, which depends on settings. The parsed time is cut to microseconds by our code, with a log line whenever digits are dropped, and passed to Postgres as a `time.Time`. Without the cut, Postgres would round extra digits while Go's driver cuts them, and two code paths could disagree on order. A string that matches neither layout gets a 400.
+
+The review proposed refusing a created_at with no time zone. We take it as UTC. Order only matters within one user, and any fixed rule for zoneless times keeps that order, while a 400 drops the event. (Added 2026-11-19 after review.)
+
 The other option was storing created_at as a number of nanoseconds, which needs our own parsing code for a case the brief's example does not suggest.
 
 ## 2026-11-18: Bodies are stored as raw bytes and sent unchanged
