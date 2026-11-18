@@ -150,7 +150,9 @@ A send has no overall timeout. The brief says a slow answer is still coming and 
 
 The connect step has a 2-second timeout. A refused or failed connect means the request was never sent, so the event is not saved and is retried. TCP keepalive (the system sending small probes on an idle connection to check its other end is still there) is on: probes start after 10 seconds of silence, repeat every 5 seconds, and the connection fails after 3 missed probes. Keepalive catches a connection whose other end has vanished without closing it. An endpoint that is alive but slow still answers the probes, so its request keeps waiting.
 
-A connection that fails or closes after the request went out, before a full answer comes back, is the unknown case. We send the event again. The most likely cause is the endpoint dying mid-request, and that most likely saved nothing. Giving up was the other option, and it is wrong whenever nothing was saved. The HTTP client must never resend a POST on its own: Go's client only retries a POST when nothing at all was written, which is safe.
+The outcome is decided by the status line alone. Once a status line has come back, a 200 means saved, and any error in the rest of the answer, while it comes in or is drained, is ignored; the body is drained only so the connection can be used again. A 200 followed by a cut body must never count as unknown, or the event would be resent and saved twice. (Added 2026-11-19 after review.)
+
+A connection that fails or closes after the request went out, before a status line comes back, is the unknown case. We send the event again. The most likely cause is the endpoint dying mid-request, and that most likely saved nothing. Giving up was the other option, and it is wrong whenever nothing was saved. The HTTP client must never resend a POST on its own: Go's client only retries a POST when nothing at all was written, which is safe.
 
 The first version of this choice had a 60-second timeout and resent after it. It was dropped for the reason in the first paragraph.
 
