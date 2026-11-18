@@ -187,7 +187,7 @@ Dropped: a 60-second timeout, then a 120-second ceiling, each followed by a rese
 
 ## 2026-11-19: The status line decides, and a connection lost before it means resend
 
-On `http.request`'s `response` event, the status line decides: a 200 means saved, whatever happens to the rest of the answer, which is drained with `res.resume()` and its errors ignored. A connection lost after the request went out and before a status line is the brief's "No connection: We are down. Not saved.", and the event is sent again. Node never resends on its own.
+On `http.request`'s `response` event, the status line decides: a 200 means saved, whatever happens to the rest of the answer. Every response, whatever its status, is drained with `res.resume()` so its socket goes back to the Agent, and errors while draining are ignored. A connection lost after the request went out and before a status line is the brief's "No connection: We are down. Not saved.", and the event is sent again. Node never resends on its own.
 
 The endpoint cannot be asked what it saved, so no design tells these cases apart: an endpoint that saves and then cuts the connection gets the event twice.
 
@@ -217,9 +217,9 @@ Dropped: the image's anonymous volume, which a new container after `down` and `u
 
 ## 2026-11-19: A database error or a failed loop never stops a process
 
-`depends_on` only orders `docker compose up`, so after a Postgres restart nothing makes the API or worker wait. Neither ever exits on a database error: both retry the connection at startup, and log and retry errors while running, with intake answering 503 meanwhile. Each user loop runs in a try/catch that logs the error with the user_id and event_id and counts it as a failed attempt. Both Pools have an `error` handler, since an error on an idle connection without one crashes Node.
+`depends_on` only orders `docker compose up`, so after a Postgres restart nothing makes the API or worker wait. Neither ever exits on a database error: both retry the connection at startup, and log and retry errors while running, with intake answering 503 meanwhile. Each user loop runs in a try/catch that logs the error with the user_id and event_id and counts it as a failed attempt. The poll loop and the SIGTERM handler run in try/catch too. Both Pools have an `error` handler, and every request and response keeps an `error` listener for its whole life, since an `error` with no listener crashes Node, even one that comes after the send has settled.
 
-Dropped: exiting and letting Docker restart, which loops while Postgres is down; and loops with no try/catch, where one user's unhandled rejection kills the worker and the restart hits the same row again.
+Dropped: exiting and letting Docker restart, which loops while Postgres is down; and leaving any of these unguarded, where one stray error kills the worker and the restart resends every send in flight.
 
 ## 2026-11-19: Before handover, a fresh clone runs on Linux
 
