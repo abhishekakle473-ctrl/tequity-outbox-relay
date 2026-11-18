@@ -192,6 +192,8 @@ Intake answers 200 only after Postgres has committed the event. It answers 400 w
 
 Those three fields are the ones the relay needs: event_id to store each event once, user_id and created_at to send in order. A 2xx for an event we cannot send would break the brief's promise that a 2xx reaches the endpoint. A 400 makes no promise, so it cannot break exactly once.
 
+Any database error during intake, including Postgres being down or restarting, gets a 503. A 400 would blame Tequity's event for our fault, and a 200 would promise an event we never stored. A 503 makes no promise and asks the load generator to try again. Every 400 is logged with its reason, so a valid event refused by mistake shows up in the logs. (Added 2026-11-19 after review.)
+
 ## 2026-11-18: Any 2xx means saved, and anything else means not saved and retried
 
 The brief's table covers 200, 500, 429, no connection and slow. For everything else: any 2xx means saved. Any 5xx, any 3xx and any 4xx other than 429 mean not saved, and redirects are not followed. A refused connection or a failed connect means the request was never sent, so not saved. A connection lost after the request went out is the unknown case, covered in its own entry, and 429 has its own entry too.
