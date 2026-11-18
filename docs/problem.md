@@ -44,9 +44,9 @@ Each needs an assumption or a design choice, made one at a time later. The last 
 
 Inside a container, localhost is the container itself, and Docker on Linux gives no default name for the host. This can break exactly once and timing.
 
-Events can reach us out of `created_at` order, and once a later event has gone out, an earlier one cannot be put back in place. Postgres timestamps keep microseconds only, so finer digits would be rounded and could tie. This can break order, and timing if we wait for stragglers.
+Events can reach us out of `created_at` order, and once a later event has gone out, an earlier one cannot be put back in place. Postgres timestamps keep microseconds only, so finer digits would be rounded and could tie. This can break order, and timing if later events are held back to wait for a late one.
 
-One request in flight per user caps a heavy user at the endpoint's answer time: at 200 ms, five events a second. This can break timing.
+If a user's events must go out one at a time to keep their order, a heavy user is capped by the endpoint's answer time: at 200 ms, five events a second. This can break timing.
 
 A five minute outage at 100 a second leaves 30,000 events, all due within 5 minutes of recovery while new ones keep coming, and we only see recovery by trying. This can break timing.
 
@@ -58,7 +58,7 @@ Two copies of one event can arrive at once on separate connections; both need a 
 
 Port 9000 can answer outside the table: a 400, 404, 503, a redirect, a 429 without a usable Retry-After, or a cut connection after sending. Each needs a meaning: saved, not saved or unknown. This can break exactly once.
 
-A slow answer has no stated limit. If we stop waiting, the outcome is unknown: sending again may save twice, giving up loses the event, and the endpoint gives us no way to check. This can break exactly once, and order and timing through the per-user hold.
+A slow answer has no stated limit. If we stop waiting, the outcome is unknown: sending again may save twice, giving up loses the event, and the endpoint gives us no way to check. This can break exactly once, and order and timing, since that user's later events wait behind it.
 
 We can crash mid-send, after the endpoint saved the event but before we recorded it. This can break exactly once.
 
