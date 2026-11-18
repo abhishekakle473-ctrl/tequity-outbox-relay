@@ -169,13 +169,13 @@ Any 2xx means saved. Any other status, a refused connection and a failed connect
 
 Dropped: waits starting at 0.5 seconds (see the 10 ms entry), and a slower schedule for refused connections, which on localhost cost under 1 ms.
 
-## 2026-11-19: Failures are logged loudly, with a status line every minute
+## 2026-11-19: Each failed attempt is logged, and so is a send over 60 seconds
 
-Each failed attempt is logged at error level with the event_id, the user_id, the status and how many times in a row it has failed. A send in flight over 60 seconds is logged as a warning, and again each minute. Once a minute the worker prints the unsent count, the oldest unsent event's age, the longest send in flight and the number of users stuck on 10 or more failures in a row. At startup it logs the unsent count.
+Each failed attempt is logged at error level with the event_id, the user_id, the status and how many times in a row it has failed. A send in flight over 60 seconds is logged as a warning, and again each minute. At startup the worker logs the unsent count.
 
-An event the endpoint always refuses, or a send that never ends, blocks one user; both show up here without searching the logs.
+An event the endpoint always refuses, or a send that never ends, blocks one user; these lines show which one and why.
 
-Dropped: stamping `attempt_started_at` before each send to list unknown outcomes after a crash. pgbench measured it at about 1 ms per event.
+Dropped: a status line every minute with backlog figures and a count of stuck users, which protects no pass condition; and stamping `attempt_started_at` before each send to list unknown outcomes after a crash, which pgbench measured at about 1 ms per event.
 
 ## 2026-11-19: A send has no overall time limit
 
