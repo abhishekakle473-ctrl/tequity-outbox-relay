@@ -63,6 +63,6 @@ Intake: `POST /events` only; anything else 404. Worker to endpoint: `POST /event
 Rig, NDJSON, times in epoch milliseconds:
 - `loadgen.ndjson`: `t_send, t_done, event_id, user_id, created_at, body_sha256, valid, status` (null plus `err` when unanswered).
 - `endpoint.ndjson`: `t, event_id, user_id, created_at, body_sha256, mode, status, saved`.
-- `modes.ndjson`: `t, mode` on every change, including `relay_stopped` while a scenario stops our services.
-- Scenario: `{seed, load:{rate, users, heavy_share, extras}, steps:[{from_s, to_s, mode, p500, latency_ms, retry_after}]}`; mode is healthy, fail, down, slow or limit, and a seeded generator picks each answer.
+- `modes.ndjson`: `t, mode, users` on every change, including `relay_stopped` while a scenario stops our services.
+- Scenario: one seeded JSON file holding the load and timed endpoint steps; plan.md defines every field.
 - `check.js` prints one JSON line per check, `{check, pass, detail}`, and exits 0 only if all pass.

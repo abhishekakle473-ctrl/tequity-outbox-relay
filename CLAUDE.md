@@ -24,7 +24,7 @@ The repo runs the way the graders run it, on Linux with plain Docker Engine: `gi
 
 ## Postgres is the only state
 
-All state lives in Postgres: no Redis, Kafka or other queue, no files on disk, and nothing in process memory that has to survive a restart.
+All state lives in Postgres: no Redis, Kafka or other queue, no files on disk, and nothing in process memory that has to survive a restart. This covers the relay; the test rig writes its logs to files.
 
 ## Working means a test run showed it
 

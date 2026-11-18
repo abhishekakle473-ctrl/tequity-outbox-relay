@@ -22,7 +22,7 @@ The checker takes `loadgen.ndjson`, `endpoint.ndjson` and `modes.ndjson`. A chec
 
 `order`: for each user, the `created_at` values of saved events, in the order the endpoint saved them, strictly increase. Fails if nothing was saved.
 
-`timing`: each promised event is saved by its deadline. The deadline is `t_done` plus 30 s, unless the endpoint was in any mode other than healthy within those 30 s, or the user still had an earlier promised event unsaved when the endpoint last recovered. Then it is that recovery time plus 300 s, as the README interprets the brief's 5-minute rule.
+`timing`: each promised event is saved by its deadline. The deadline is `t_done` plus 30 s, unless the endpoint was in a mode other than healthy for that user within those 30 s, or the user still had an earlier promised event unsaved when the endpoint last recovered for that user. Then it is that recovery time plus 300 s, as the README interprets the brief's 5-minute rule. A recovery is the start of a healthy period, for that user, that lasts at least 30 s, so a flapping endpoint has not recovered until it stays up.
 
 `intake_up`: outside `relay_stopped` windows, every valid post got a 2xx within 1 s and every invalid post got a 400. Fails if nothing was posted.
 
@@ -32,7 +32,30 @@ The checker takes `loadgen.ndjson`, `endpoint.ndjson` and `modes.ndjson`. A chec
 
 `rig/baseline.json` lists, per scenario, the checks that have passed. After every unit, `node --test` and every scenario in `rig/scenarios/` run. A check listed in the baseline that now fails stops the unit. The baseline only grows. Handover needs three full runs in a row with every listed check passing.
 
-The scenarios are healthy, fail, down-5min, slow, limit-user, limit-all, input, restart and kill. Each is seeded, so its posts and the endpoint's answers repeat exactly. A run is `SCENARIO=<name> docker compose -f rig/compose.yaml up --exit-code-from check`.
+The scenarios are healthy, fail, down-5min, slow, limit-user, limit-all, input, slots, flap, restart and kill. In slots, the endpoint answers 300 users after 20 s each, so all 200 slots fill, while one light user stays healthy; it passes when that user's events are saved within their 30-second deadline. In flap, after a 5-minute outage the endpoint goes down and up every 3 s for 60 s before it stays up; it passes all five checks. Each is seeded, so its posts and the endpoint's answers repeat exactly. A run is `SCENARIO=<name> docker compose -f rig/compose.yaml up --exit-code-from check`.
+
+## Scenario files
+
+A scenario is one JSON file in `rig/scenarios/`, read by the fake endpoint, the load generator and the checker.
+- `seed`: the integer behind every random choice.
+- `duration_s`: how long the load generator posts.
+- `drain_s`: how long the checker waits after the load generator finishes before it grades.
+- `load.rate`: posts a second, at most 100.
+- `load.users`: the number of users, named `u0001` upward.
+- `load.heavy_users` and `load.heavy_share`: the first `heavy_users` users get `heavy_share` of the posts.
+- `load.extras`: the chance, per post, of `repeat` (the same event again), `diff_body` (the same event_id with another body), `out_of_order` (sent up to 1 s before an earlier event of its user) and `invalid` (a bad body).
+- `steps`: a list of `{from_s, to_s, mode, p, latency_ms, retry_after, users}`, timed from the endpoint's start; outside every step the endpoint is healthy. healthy and slow answer 200 after `latency_ms`. fail answers 500 with chance `p`, else 200. limit answers 429 with `Retry-After: retry_after` with chance `p`, else 200. down closes the listener, so connections are refused. `users`, when given, limits a step to those user_ids; down ignores it.
+
+Every mode change, for all users or a list, is one `modes.ndjson` line `{t, mode, users}`, with `users` null for all.
+
+## Capacity
+
+U7 records these at full load on Docker Desktop, and U9 again on Linux, each next to the figure we expect from docs/decisions.md. A figure worse than expected goes back to the decision it rests on before the unit is done.
+- Our time per event, the `delivered_at` commit plus the next-event lookup: about 5 ms, the pgbench figure in the 10 ms entry.
+- Intake answer time while a 30,000-event backlog drains: well under the 1 s `intake_up` limit; one durable commit, about 3 to 4 ms in pgbench, is most of it.
+- The poll query at 30,000 unsent events: under the 200 ms between polls; the 1,000-event figure, under 2 ms, suggests about 30 ms.
+- Delivery rate while a 5-minute outage clears: about 200 events a second, from the 10 ms entry.
+- The worker's CPU and memory with 200 sends in flight: decisions.md gives no figure; we expect well under one core and under 200 MB.
 
 ## Review focus
 
@@ -159,10 +182,8 @@ Done when `node --test test/worker.test.js`, with fake send and SQL, shows:
 
 Then healthy, fail, slow, limit-user, limit-all and input pass all five checks, and go into the baseline. Needs U3, U4, U5 and R4.
 
-### U7 Outage at full load
-Done when down-5min, at 100 a second with a 30% heavy user, passes all five checks. The commit records two figures:
-- our time per event, from the worker's log
-- `EXPLAIN ANALYZE` of the poll query at peak backlog
+### U7 Outage, slots and flap at full load
+Done when down-5min, slots and flap, at 100 a second with a 30% heavy user, pass all five checks, and the commit records every figure in the capacity section next to its expected value.
 
 Parallel with U8. Needs U6.
 
@@ -176,7 +197,7 @@ Done when, on Linux with plain Docker Engine (a GitHub Actions Ubuntu runner if 
 - `git clone` and `docker compose up -d` run cleanly
 - three full scenario runs pass every baseline check
 - the 127.0.0.1-bound endpoint case passes
-- our time per event is measured
+- the capacity figures are recorded next to their expected values
 
 The README gets the commands and their output. Needs U7 and U8.
 

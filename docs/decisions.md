@@ -171,7 +171,7 @@ Dropped: a status line every minute with backlog figures and a count of stuck us
 
 ## A send has no overall time limit
 
-The brief says a slow answer is still coming and a 200 means saved, so a timeout and resend is the one way to save twice on an endpoint that is slow but alive. Sends use `http.request`, never `fetch`, which follows redirects and has a hidden 300-second limit; its `timeout` option stays unused, since it fires during a slow answer. Connecting has no timer: on localhost a connection is accepted or refused at once. An error before the socket connected means not sent, after it unknown.
+The brief says a slow answer is still coming and a 200 means saved, so a timeout and resend is the one way to save twice on an endpoint that is slow but alive. Sends use `http.request`, never `fetch`, which follows redirects and has a hidden 300-second limit; its `timeout` option stays unused, since it fires during a slow answer. Connecting has no timer: on localhost a connection is accepted or refused at once. An error before the socket connected means not sent; one after it is the brief's "No connection: not saved", and the event is resent.
 
 An endpoint that never answers keeps that one user waiting; the brief's table has no such endpoint.
 
