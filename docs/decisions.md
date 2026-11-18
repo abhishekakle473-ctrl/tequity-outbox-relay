@@ -145,10 +145,12 @@ SELECT user_id FROM (
   SELECT DISTINCT ON (user_id) user_id, received_at
   FROM events WHERE delivered_at IS NULL
   ORDER BY user_id, created_at, seq) o
-WHERE received_at < now() - interval '1 second' AND user_id <> ALL($1);
+WHERE received_at < now() - interval '1 second' AND user_id <> ALL($1)
+ORDER BY received_at
+LIMIT $2;
 ```
 
-`$1` is the list of users the worker is already sending for. (Added 2026-11-19 after review: the first version named no arrival time.)
+`$1` is the list of users the worker is already sending for or has paused (a 429 or a retry wait). `$2` is the number of free slots, 200 minus the users in flight. Both groups are left out before the limit, so a limit filled by busy users can never hide a new one, and the oldest waiting user goes first, so no user starves. (Added 2026-11-19 after review: the first version named no arrival time, and had no order or limit.)
 
 The query runs every 200 ms, and the table grows with every delivered row, so it has a partial index that holds unsent rows only:
 
