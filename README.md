@@ -7,6 +7,7 @@
 - Ports 8080 and 54329 are free on the grading machine.
 - Tequity starts sending once `docker compose up` shows our services running.
 - When healthy, the endpoint answers in about 10 ms or less, with 500s on at most a few percent of requests, and during recovery it does not rate limit us below about 200 events a second. The design is sized for that with the heaviest user sending 30 of the 100 events a second; the 30 is our guess, since the brief says only that a few users send far more than the rest. A user sending 50 a second would need answers in about 4 ms. The test rig measures the endpoint's answer time.
+- When healthy, the endpoint rarely answers 429.
 - After the endpoint recovers, a heavy user's new events queue behind its backlog, in order, and can wait close to 5 minutes. We read the brief's 5-minute rule as covering every event held up by the outage, and its 30-second rule as applying again once that user's backlog is clear.
 - A user's events reach us out of created_at order by at most about 1 second. An earlier event that comes later than that, after the user's later events went out, is still sent, late and out of order.
 - created_at has at most 6 decimal places of seconds, and one without a time zone is in UTC.

@@ -203,11 +203,11 @@ Dropped: 20 seconds.
 
 ## 2026-11-19: A 429 pauses only the user who got it
 
-On a 429 the worker pauses that user for Retry-After seconds, at least 1 second, which also covers a missing header, a value that is not a whole number and `Retry-After: 0`. Other users keep sending. The 429 does not raise the retry wait, and the event goes out again after the pause.
+On a 429 the worker pauses that user for Retry-After seconds, at least 1 second, which covers a missing, zero or broken header. Other users keep sending. The 429 does not raise the retry wait, and the event goes out again after the pause.
 
-The brief does not say whether the limit is per user or covers the whole endpoint, and a per-user pause works for both. Under an endpoint-wide limit, every user that hits it pauses itself and the load drops, at the cost of a few extra 429s.
+The brief does not say whether the limit is per user or covers the whole endpoint, and a per-user pause works for both: under an endpoint-wide limit, every user that hits it pauses itself and the load drops. Heavy rate limiting would still starve a heavy user, since each 429 costs it at least a second; the README assumes the endpoint rarely rate limits when healthy.
 
-Dropped: pausing everyone, which under a per-user limit would stall every user behind one heavy user's 429s, past the 30 seconds.
+Dropped: pausing everyone, which under a per-user limit stalls every user behind one heavy user's 429s; and halving the users in flight on each 429, a control loop for a case the README assumes away.
 
 ## 2026-11-19: Startup waits for a healthy Postgres, and data lives in a named volume
 
