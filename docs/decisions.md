@@ -78,6 +78,8 @@ The worker runs one goroutine (a cheap parallel task in Go) per user it is sendi
 
 Python with asyncio was the close second: less code, fast enough for 100 events a second, but more packages to pin. Node is much like Python. Java and Kotlin bring bigger images and slower starts for no gain here. Postgres 16 is the version the host networking checks ran on.
 
+Every image is pinned to an exact patch tag, so the graders build what we tested. Postgres is `postgres:16.16-alpine`: the `16-alpine` tag on the build laptop printed `postgres (PostgreSQL) 16.16` for `postgres --version`. The Go build image and the runtime image get exact patch tags when the Dockerfile is written. The Dockerfile is a multi-stage build: a Go stage compiles one static binary with `CGO_ENABLED=0`, and a small runtime stage holds only that binary. `go.sum` is committed, so the graders' build downloads the same module versions. (Added 2026-11-19 after review.)
+
 ## 2026-11-18: One worker process, with delivered_at as the only record of progress
 
 Events go in one `events` table: event_id as the primary key, user_id, created_at, the body as received, `received_at timestamptz NOT NULL DEFAULT now()` (when the event arrived, by Postgres's clock), `seq bigint GENERATED ALWAYS AS IDENTITY` (an arrival number used to break ties), and `delivered_at`. A single worker process sends for all users. Every 200 ms it asks Postgres which users have an event ready to go (the 1-second hold decides "ready"). It skips users it is already sending for, and starts a loop for each of the others, up to 200 users at a time. A loop sends the user's oldest unsent event, waits for the answer, and on a 2xx sets `delivered_at`, commits and moves on to the next one.
