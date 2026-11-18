@@ -1,0 +1,7 @@
+{
+  "seed": 1,
+  "duration_s": 120,
+  "drain_s": 35,
+  "load": { "rate": 100, "users": 200, "heavy_users": 1, "heavy_share": 0.3 },
+  "steps": []
+}

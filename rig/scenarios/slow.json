@@ -1,0 +1,9 @@
+{
+  "seed": 4,
+  "duration_s": 120,
+  "drain_s": 60,
+  "load": { "rate": 100, "users": 200, "heavy_users": 1, "heavy_share": 0.3 },
+  "steps": [
+    { "from_s": 30, "to_s": 90, "mode": "slow", "latency_ms": 2000 }
+  ]
+}

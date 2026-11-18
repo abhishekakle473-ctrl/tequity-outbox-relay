@@ -1,0 +1,37 @@
+# Run: SCENARIO=<name> docker compose -f rig/compose.yaml run --rm check; then docker compose -f rig/compose.yaml down
+x-rig: &rig
+  image: outbox-rig
+  pull_policy: build # rebuild on every run, so an edited rig file is never run from a stale image
+  build:
+    context: ..
+    dockerfile: rig/Dockerfile
+  network_mode: host
+  volumes:
+    - data:/data # a named volume: on Docker Desktop for Windows a bind mount took minutes for 12,000 appendFileSync calls and stalled the load generator
+  environment:
+    SCENARIO_FILE: /app/rig/scenarios/${SCENARIO:-healthy}.json
+    DATA_DIR: /data
+
+services:
+  endpoint:
+    <<: *rig
+    command: node rig/endpoint.ts
+
+  loadgen:
+    <<: *rig
+    command: node rig/loadgen.ts
+    depends_on:
+      endpoint:
+        condition: service_started
+
+  check:
+    <<: *rig
+    command: node rig/check.ts --wait
+    depends_on:
+      endpoint:
+        condition: service_started
+      loadgen:
+        condition: service_completed_successfully
+
+volumes:
+  data:

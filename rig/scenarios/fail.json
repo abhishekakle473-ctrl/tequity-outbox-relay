@@ -1,0 +1,11 @@
+{
+  "seed": 2,
+  "duration_s": 120,
+  "drain_s": 60,
+  "load": { "rate": 100, "users": 200, "heavy_users": 1, "heavy_share": 0.3 },
+  "steps": [
+    { "from_s": 0, "to_s": 40, "mode": "fail", "p": 0.02 },
+    { "from_s": 40, "to_s": 60, "mode": "fail", "p": 1 },
+    { "from_s": 60, "to_s": 120, "mode": "fail", "p": 0.02 }
+  ]
+}
