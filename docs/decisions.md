@@ -74,7 +74,7 @@ Python with asyncio was the close second: less code, fast enough for 100 events 
 
 ## 2026-11-18: One worker process, with delivered_at as the only record of progress
 
-Events go in one `events` table: event_id as the primary key, user_id, created_at, the body as received, an arrival number used to break ties, and `delivered_at`. A single worker process sends for all users. Every 200 ms it asks Postgres which users have an event ready to go (the 1-second hold decides "ready"). It skips users it is already sending for, and starts a loop for each of the others, up to 200 users at a time. A loop sends the user's oldest unsent event, waits for the answer, and on a 2xx sets `delivered_at`, commits and moves on to the next one.
+Events go in one `events` table: event_id as the primary key, user_id, created_at, the body as received, `received_at timestamptz NOT NULL DEFAULT now()` (when the event arrived, by Postgres's clock), `seq bigint GENERATED ALWAYS AS IDENTITY` (an arrival number used to break ties), and `delivered_at`. A single worker process sends for all users. Every 200 ms it asks Postgres which users have an event ready to go (the 1-second hold decides "ready"). It skips users it is already sending for, and starts a loop for each of the others, up to 200 users at a time. A loop sends the user's oldest unsent event, waits for the answer, and on a 2xx sets `delivered_at`, commits and moves on to the next one.
 
 The worker keeps in memory which users are in flight, plus any pause or retry wait. None of that has to survive a restart. After one, anything without `delivered_at` is sent again, and the worst a forgotten wait costs is one extra 500 or 429.
 
@@ -121,6 +121,18 @@ No design gets round this. The order rule forces one event at a time per user, a
 ## 2026-11-18: A user waits while its oldest unsent event is under 1 second old
 
 The worker looks at each user's oldest unsent event by created_at. If that event arrived less than 1 second ago, the whole user waits. No later event of that user goes out while an earlier one is still inside its hold. The same check runs before every send in a user's loop, so an earlier event that arrives mid-loop stops the loop until its second has passed, and then goes out first.
+
+"Arrived" means `received_at`, set by Postgres's clock when intake inserts the row. created_at is the load generator's clock and only decides order. The hold is applied after picking each user's oldest unsent event, never in a WHERE before the pick. Filtering first would skip a user's held oldest event and pick their second one, which is the order bug described below. The poll query:
+
+```sql
+SELECT user_id FROM (
+  SELECT DISTINCT ON (user_id) user_id, received_at
+  FROM events WHERE delivered_at IS NULL
+  ORDER BY user_id, created_at, seq) o
+WHERE received_at < now() - interval '1 second' AND user_id <> ALL($1);
+```
+
+`$1` is the list of users the worker is already sending for. (Added 2026-11-19 after review: the first version named no arrival time.)
 
 Events can reach us out of created_at order, for example over parallel connections. The hold lets a slightly late earlier event take its place, and costs 1 of the 30 seconds the brief allows.
 
