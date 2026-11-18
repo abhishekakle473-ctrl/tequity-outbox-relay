@@ -12,7 +12,7 @@ No product code (the intake API and the workers) gets written until the design i
 
 ## Every decision is written down when it is made
 
-When we settle a design choice, the same commit adds a dated entry to docs/decisions.md saying what was decided and why. When it rests on an assumption about Tequity's side (their endpoint, their load generator, their machine, how they grade), the same commit also adds that assumption to the list at the top of README.md. The README lists only those assumptions; design choices live only in docs/decisions.md. Each entry holds only the current decision, in at most 150 words: what, why, the option dropped, and the command that proved it, if any. One decision per commit. The commit message states the decision, for example "Hold a user's later events while an earlier one has an unknown outcome". A message like "Update README and decisions.md" is never acceptable.
+When we settle a design choice, the same commit adds a dated entry to docs/decisions.md saying what was decided and why. When it rests on an assumption about Tequity's side (their endpoint, their load generator, their machine, how they grade), the same commit also adds that assumption to the list at the top of README.md. The README lists only those assumptions; design choices live only in docs/decisions.md. Each entry holds only the current decision, in at most 150 words: what, why, the option dropped if one was weighed and lost, and the command that proved it, if any. One decision per commit. The commit message states the decision, for example "Hold a user's later events while an earlier one has an unknown outcome". A message like "Update README and decisions.md" is never acceptable.
 
 ## History is never rewritten
 

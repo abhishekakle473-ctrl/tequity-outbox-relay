@@ -62,9 +62,6 @@ Dropped: floating tags such as `16-alpine`, which can change between our test an
 ## 2026-11-19: Every text file has LF line endings
 
 `.gitattributes` holds `* text=auto eol=lf`. Git on the build laptop has `core.autocrlf=true`, so without it a Windows checkout gets CRLF, and an image built there could differ from the graders' Linux build. The repo has no shell scripts beyond what compose and the Dockerfile hold inline.
-
-Dropped: relying on each machine's git settings.
-
 ```
 $ git ls-files --eol
 i/lf    w/lf    attr/text=auto eol=lf   README.md
@@ -196,9 +193,9 @@ Dropped: giving up after a lost connection, which loses the event whenever nothi
 
 On SIGTERM the worker stops polling and starting sends, lets every send in flight and its `delivered_at` write finish, closes its Pool and exits. Compose's `stop_grace_period` is 120 seconds. A send cut off by the kill or a crash is sent again on restart and may be saved twice. Each service starts Node with an exec-form `CMD ["node", "worker.js"]` (`api.js` for the API), since Node as process 1 ignores SIGTERM without a handler. The API's handler stops taking posts and lets inserts in progress commit.
 
-A short grace period is a timeout-then-resend for slow sends. The worker exits as soon as its sends finish, so the 120 seconds is spent only on a slow one.
+The worker exits as soon as its sends finish, so the 120 seconds is spent only on a slow one.
 
-Dropped: 20 seconds.
+Dropped: 20 seconds, which is a timeout-then-resend for any send slower than that.
 
 ## 2026-11-19: A 429 pauses only the user who got it
 
@@ -212,7 +209,7 @@ Dropped: pausing everyone, which under a per-user limit stalls every user behind
 
 Postgres has a health check, `pg_isready -h 127.0.0.1 -p 54329`, and the API and worker wait for it with `depends_on: condition: service_healthy`. The tables come from one SQL file in `/docker-entrypoint-initdb.d`, which Postgres runs on an empty data folder only, so a schema change needs `docker compose down -v`. Data lives in the named volume `pgdata:/var/lib/postgresql/data`, with fsync and synchronous_commit on, and survives `down` and `up`. Every service has `restart: unless-stopped`.
 
-Dropped: the image's anonymous volume, which a new container after `down` and `up` replaces with an empty one, losing every unsent event we answered 2xx for; and a migration tool, which one SQL file does not need.
+Dropped: the image's anonymous volume, which a new container after `down` and `up` replaces with an empty one, losing every unsent event we answered 2xx for.
 
 ## 2026-11-19: A database error or a failed loop never stops a process
 
