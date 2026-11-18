@@ -153,3 +153,9 @@ The connect step has a 2-second timeout. A refused or failed connect means the r
 A connection that fails or closes after the request went out, before a full answer comes back, is the unknown case. We send the event again. The most likely cause is the endpoint dying mid-request, and that most likely saved nothing. Giving up was the other option, and it is wrong whenever nothing was saved. The HTTP client must never resend a POST on its own: Go's client only retries a POST when nothing at all was written, which is safe.
 
 The first version of this choice had a 60-second timeout and resent after it. It was dropped for the reason in the first paragraph.
+
+## 2026-11-18: A normal stop gives in-progress sends 20 seconds
+
+When the worker is told to stop, it starts no new sends and waits for the ones in progress. Compose's `stop_grace_period` for the worker is 20 seconds; after that the worker is killed. Any send cut off, by that kill or by a crash, has no `delivered_at`, so it is sent again on restart and may be saved twice. A 200 that arrives just before a crash, ahead of the commit of `delivered_at`, has the same result.
+
+Sends have no overall timeout, so the grace period cannot wait for every send to end on its own. While the worker is stopping, no user moves forward, and the brief allows 30 seconds from our 2xx. 20 seconds lets most slow answers finish and leaves time to restart and catch up. The earlier plan was 70 seconds, sized to a 60-second request timeout that no longer exists.

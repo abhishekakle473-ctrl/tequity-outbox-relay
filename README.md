@@ -16,6 +16,7 @@
 - Intake answers 200 only after Postgres has committed the event. It answers 400 when the body is not a JSON object, or when event_id, user_id or created_at is missing, empty or unreadable, and 413 when the body is over 1 MB. `type` and `data` pass through unchecked.
 - Any 2xx from the endpoint means saved. Any other status, a refused connection or a failed connect means not saved, and the event is retried after 0.5 seconds, doubling up to 5 seconds. Redirects are not followed.
 - A slow answer is always waited for. Sends have no overall timeout, only a 2-second connect timeout. TCP keepalive (the system checking an idle connection's other end is still there) makes a connection whose other end has vanished fail. That failure, like any connection lost after the request went out, means the outcome is unknown, and the event is sent again.
+- On a normal stop the worker starts no new sends and waits up to 20 seconds for the ones in progress. A send still going after that, or one cut short by a hard kill, is sent again on restart and may be saved twice.
 
 ## What this is
 
