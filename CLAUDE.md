@@ -12,11 +12,11 @@ No product code (the intake API and the workers) gets written until the design i
 
 ## Every decision is written down when it is made
 
-When we settle a design choice, the same commit adds a dated entry to docs/decisions.md saying what was decided and why. When it rests on an assumption about Tequity's side (their endpoint, their load generator, their machine, how they grade), the same commit also adds that assumption to the list at the top of README.md. The README lists only those assumptions; design choices live only in docs/decisions.md. One decision per commit. The commit message states the decision, for example "Hold a user's later events while an earlier one has an unknown outcome". A message like "Update README and decisions.md" is never acceptable.
+When we settle a design choice, the same commit adds a dated entry to docs/decisions.md saying what was decided and why. When it rests on an assumption about Tequity's side (their endpoint, their load generator, their machine, how they grade), the same commit also adds that assumption to the list at the top of README.md. The README lists only those assumptions; design choices live only in docs/decisions.md. Each entry holds only the current decision, in at most 150 words: what, why, the option dropped, and the command that proved it, if any. One decision per commit. The commit message states the decision, for example "Hold a user's later events while an earlier one has an unknown outcome". A message like "Update README and decisions.md" is never acceptable.
 
 ## History is never rewritten
 
-The brief asks for the full git history, unsquashed. No squash, amend, rebase, reset or force-push, ever. A changed decision is a new commit that edits the decision entry in place, with a dated note saying what changed and why, and a message stating the new decision. One commit message was reworded with an amend on 2026-11-18, before anything was pushed (`a685113` became `900044d`); there will be no more.
+The brief asks for the full git history, unsquashed. No squash, amend, rebase, reset or force-push, ever. A changed decision is a new commit that rewrites its entry in place to the current decision, with a message stating the new decision and why it changed. Git keeps the history, so entries carry no notes about earlier versions. One commit message was reworded with an amend on 2026-11-18, before anything was pushed (`a685113` became `900044d`); there will be no more.
 
 ## Postgres is the only state
 
