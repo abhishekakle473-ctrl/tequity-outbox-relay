@@ -28,3 +28,24 @@ Server: SimpleHTTP/0.6 Python/3.12.16
 ```
 
 `netstat -tln` in the server container showed `127.0.0.1:9000 ... LISTEN`. The 127.0.0.1 case is still unproven on plain Docker on Linux, which is how Tequity grades. We prove it when the test rig runs on Linux.
+
+## 2026-11-18: Postgres runs on host networking at 127.0.0.1:54329
+
+Postgres also runs with host networking, started as `postgres -p 54329 -c listen_addresses=127.0.0.1`. The API and worker connect to it at localhost:54329.
+
+With host networking, Postgres takes a port on the grading machine itself. The default, 5432, may already be in use there. It is on the laptop this was built on, where another project's Postgres container holds 127.0.0.1:5432. Port 54329 is unlikely to be taken. Listening on 127.0.0.1 keeps Postgres out of reach of other machines. If 54329 is taken after all, Postgres fails to start and `docker compose up` shows the error.
+
+Keeping Postgres on a normal Compose network and publishing a port has the same clash risk on that port, and the host-network API and worker cannot find it by service name anyway.
+
+Inside Docker Desktop's Linux VM, a second host-network container connected to it:
+
+```
+$ docker run -d --name hn-pg --network host -e POSTGRES_PASSWORD=check postgres:16-alpine -p 54329 -c listen_addresses=127.0.0.1
+$ docker run --rm --network host -e PGPASSWORD=check postgres:16-alpine sh -c "until pg_isready -q -h 127.0.0.1 -p 54329; do sleep 1; done; psql -h 127.0.0.1 -p 54329 -U postgres -c \"select current_setting('port') as port, current_setting('listen_addresses') as listen, inet_server_addr() as connected_to\""
+ port  |  listen   | connected_to
+-------+-----------+--------------
+ 54329 | 127.0.0.1 | 127.0.0.1
+(1 row)
+```
+
+`netstat -tln` showed `127.0.0.1:54329 ... LISTEN` next to the other project's `127.0.0.1:5432 ... LISTEN`.
