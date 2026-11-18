@@ -68,6 +68,8 @@ curl: (7) Failed to connect to localhost port 8080 after 2237 ms: Could not conn
 
 Docker Desktop runs containers in a Linux VM, and host-network containers inside that VM reach each other on localhost (the 127.0.0.1:9000 test in the first entry). That matches the grading machine, where Tequity's endpoint and load generator talk to us over the machine's own localhost. On Linux, the same rig runs unchanged.
 
+The rig lives in its own compose file, `rig/compose.yaml`, started with `docker compose -f rig/compose.yaml up`. The graders' `docker compose up` in the repo root starts the relay only and never our fake endpoint, which would otherwise take port 9000 next to theirs. A profile in the main file was the other option, but it depends on nobody turning the profile on; a separate file cannot be started by a plain `up`. The repo never holds a `compose.override.yaml` or `docker-compose.override.yml`, since compose loads those on its own. (Added 2026-11-19 after review.)
+
 ## 2026-11-18: The relay is written in Go, on Postgres 16
 
 The intake API, the worker and the test rig are written in Go. Postgres is version 16, with the image tag pinned.
