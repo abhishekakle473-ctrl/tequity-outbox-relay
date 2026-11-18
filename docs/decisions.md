@@ -63,3 +63,11 @@ curl: (7) Failed to connect to localhost port 8080 after 2237 ms: Could not conn
 ```
 
 Docker Desktop runs containers in a Linux VM, and host-network containers inside that VM reach each other on localhost (the 127.0.0.1:9000 test in the first entry). That matches the grading machine, where Tequity's endpoint and load generator talk to us over the machine's own localhost. On Linux, the same rig runs unchanged.
+
+## 2026-11-18: The relay is written in Go, on Postgres 16
+
+The intake API, the worker and the test rig are written in Go. Postgres is version 16, with the image tag pinned.
+
+The worker runs one goroutine (a cheap parallel task in Go) per user it is sending for, which fits the one-event-at-a-time-per-user rule. Go's standard library has an HTTP server and an HTTP client with exact control over timeouts, and timeouts decide when a send's outcome is unknown. The build is one binary with no runtime to install in the image.
+
+Python with asyncio was the close second: less code, fast enough for 100 events a second, but more packages to pin. Node is much like Python. Java and Kotlin bring bigger images and slower starts for no gain here. Postgres 16 is the version the host networking checks ran on.
