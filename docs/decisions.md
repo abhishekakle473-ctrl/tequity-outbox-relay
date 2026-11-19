@@ -47,7 +47,7 @@ curl: (7) Failed to connect to localhost port 8080 after 2237 ms: Could not conn
 
 ## The relay is written in TypeScript, run by Node.js 24 with no build step
 
-The intake API, the worker and the test rig are TypeScript files that Node.js 24 runs directly, stripping the types itself. Only erasable syntax is used: no enums, no namespaces. `tsc --noEmit` with a strict tsconfig is a test step in every unit. `typescript` and `@types/node` are dev dependencies only, and `pg` is the one runtime dependency. Node's `http` module serves the API and calls port 9000. The API and the worker are two processes from one image; the worker runs one async loop per user.
+The intake API, the worker and the test rig are TypeScript files that Node.js 24 runs directly. Erasable syntax only: no enums, no namespaces. `tsc --noEmit` with a strict tsconfig is a test step in every unit. `typescript`, `@types/node` and `@types/pg` are dev dependencies only (strict tsc needs pg's types), and `pg` is the one runtime dependency. Node's `http` module serves the API and calls port 9000. The API and the worker are two processes from one image; the worker runs one async loop per user.
 
 TypeScript is what the author wants to be judged in, and types on the contracts (the event row, the send result, the scenario format, the log lines) catch mistakes between parts early.
 
@@ -57,7 +57,7 @@ On `node:24.22.3-alpine3.24`, `node main.ts` ran, `node --test` found `*.test.ts
 
 ## Every build input is pinned
 
-Every image has an exact patch tag. Postgres is `postgres:16.16-alpine`, the version the `16-alpine` tag gave on the build laptop (`postgres --version` printed `postgres (PostgreSQL) 16.16`). Node is `node:24.22.3-alpine3.24`, and the dev dependencies are exact: `typescript` 7.0.2 and `@types/node` 24.19.2. `package-lock.json` is committed and the image build runs `npm ci --omit=dev`, so the graders need nothing but Docker and get the same `pg`. With no build step, one stage is enough.
+Every image has an exact patch tag. Postgres is `postgres:16.16-alpine`, the version the `16-alpine` tag gave on the build laptop (`postgres --version` printed `postgres (PostgreSQL) 16.16`). Node is `node:24.22.3-alpine3.24`, and the dependencies are exact: `pg` 8.23.1, and the dev dependencies `typescript` 7.0.2, `@types/node` 24.19.2 and `@types/pg` 8.23.1. `package-lock.json` is committed and the image build runs `npm ci --omit=dev`, so the graders need nothing but Docker and get the same `pg`. With no build step, one stage is enough.
 
 Dropped: floating tags such as `16-alpine`, which can change between our test and the graders' build.
 

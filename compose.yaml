@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16.16-alpine
+    network_mode: host
+    init: true
+    restart: unless-stopped
+    command: postgres -p 54329 -c listen_addresses=127.0.0.1 -c timezone=UTC
+    environment:
+      POSTGRES_PASSWORD: relay
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-p", "54329"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db:/docker-entrypoint-initdb.d:ro
+
+volumes:
+  pgdata:
