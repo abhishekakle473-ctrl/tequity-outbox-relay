@@ -190,7 +190,7 @@ Then `SCENARIO=healthy` passes `intake_up`, which goes into the baseline.
 ### U4 Send (this session, test-first)
 Builder: this session, with superpowers:test-driven-development. Reviewers: ecc:typescript-reviewer and ecc:silent-failure-hunter. Depends on nothing; wave 1.
 Files: `src/send.ts`, `test/send.test.ts`, against an in-process test server.
-Interface: `post(agent: http.Agent, url: string, body: Buffer): Promise<SendResult>`, where `SendResult` is `{ kind: 'saved' } | { kind: 'pause'; seconds: number } | { kind: 'retry'; why: string }`.
+Interface: `post(agent: http.Agent, url: string, body: Buffer, ids: Ids): Promise<SendResult>`, where `SendResult` is `{ kind: 'saved' } | { kind: 'pause'; seconds: number } | { kind: 'retry'; why: string }` and `Ids` is `{ event_id: string; user_id: string }`, used only to tie log lines to the event.
 
 Done when `node --test test/send.test.ts` shows:
 - a 200 with a cut body is saved
