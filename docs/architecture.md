@@ -11,7 +11,7 @@ flowchart LR
   subgraph host["host network, one localhost"]
     LG["load generator<br/>(Tequity, or rig)"] -->|"HTTP POST /events"| API["intake API :8080"]
     API -->|"SQL insert"| PG[("Postgres 127.0.0.1:54329<br/>volume pgdata")]
-    W["worker<br/>poll, up to 200 user loops"] -->|"SQL poll, next event, delivered_at"| PG
+    W["worker<br/>poll, up to 1,000 user loops"] -->|"SQL poll, next event, delivered_at"| PG
     W -->|"HTTP POST /events, stored bytes"| EP["endpoint :9000<br/>(Tequity, or rig fake)"]
   end
   LG -.->|"loadgen.ndjson"| CK["rig checker"]

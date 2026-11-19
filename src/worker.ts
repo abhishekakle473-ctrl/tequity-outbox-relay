@@ -21,7 +21,7 @@ export interface WorkerDeps {
   now(): number;
 }
 
-const MAX_LOOPS = 200;
+const MAX_LOOPS = 1000;
 const POLL_MS = 200;
 const SLOW_SEND_MS = 60_000;
 

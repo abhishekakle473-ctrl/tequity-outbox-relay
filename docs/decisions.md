@@ -73,11 +73,11 @@ i/-text w/-text attr/text=auto eol=lf   Tequity-take-home-Outbox-relay.pdf
 
 ## One worker process, with delivered_at as the only record of progress
 
-Events go in one table: `event_id` (primary key), `user_id`, `created_at`, `body bytea`, `received_at timestamptz DEFAULT now()`, `seq bigint GENERATED ALWAYS AS IDENTITY` and `delivered_at`. One worker process sends for every user, up to 200 at a time: 200 events a second even at 1-second answers. It polls for users with an event ready, each poll starting 200 ms after the last one finished. A loop starts only if its user is not in the in-memory in-flight set at that moment, so one user never has two loops. Each loop looks up the user's oldest unsent event afresh, sends it, waits for the answer, commits `delivered_at` on a 2xx and moves on.
+Events go in one table, defined in db/init.sql. One worker process sends for every user, up to 1,000 at a time; a waiting send holds a socket, not a database connection. It polls for users with an event ready, each poll starting 200 ms after the last one finished. A loop starts only if its user has none running, so one user never has two. Each loop looks up the user's oldest unsent event afresh, sends it, waits for the answer, commits `delivered_at` on a 2xx and moves on.
 
 In-flight users, pauses and retry waits live in memory and need not survive a restart; after one, anything without `delivered_at` is sent again.
 
-Dropped: several worker processes coordinating through locks, which 100 events a second does not need.
+Dropped: 200 slots, which the slots scenario's 300 users on 20-second answers filled on GitHub, making 939 of 12,000 events late; and several worker processes coordinating through locks, which 100 events a second does not need.
 
 ## delivered_at is committed before the next send, and never causes a resend
 
@@ -91,7 +91,7 @@ Dropped: committing while the next event is sent, which would save about 5 ms pe
 
 The worker's `pg` Pool has `max: 20` and the API's `max: 30`, 50 of Postgres's 100. Each loop takes a connection for one statement at a time through `pool.query`, never while waiting on port 9000. Calls to 9000 share one `new http.Agent({ keepAlive: true })`, so sends reuse their TCP connections; its defaults already keep up to 256 idle sockets and turn TCP keepalive on. Both Pools give up on a connect after 5 s and cancel a statement after 10 s, so a stalled Postgres never hangs a request.
 
-Dropped: `pg`'s default of 10 connections per pool, too few for 200 user loops.
+Dropped: `pg`'s default of 10 connections per pool, too few for 1,000 user loops.
 
 pgbench, run on the build laptop's Docker Desktop with 20 connections, did about 3,500 steps a second, 17 times what the outage maths needs. Each step was one `UPDATE ... SET delivered_at` by event_id and one query for a user's next unsent event.
 

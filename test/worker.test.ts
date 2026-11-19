@@ -330,3 +330,21 @@ test("each lookup passes the created_at of the user's last delivered event", asy
   await w.stop();
   assert.deepEqual(lasts.slice(0, 3), [null, 'e1', 'e2']);
 });
+
+test('500 users each with a send waiting on a slow endpoint all have a send in flight at once', async () => {
+  const users: Record<string, string[]> = {};
+  for (let i = 0; i < 500; i++) users[`u${i}`] = [`e${i}`];
+  const f = fakes(users);
+  const answer = deferred<SendResult>();
+  f.deps.send = async (_b, ids) => {
+    f.sent.push(ids.event_id);
+    return answer.promise;
+  };
+  const w = startWorker(f.deps);
+  try {
+    await until(() => f.sent.length === 500);
+  } finally {
+    answer.resolve({ kind: 'saved' });
+    await w.stop();
+  }
+});
