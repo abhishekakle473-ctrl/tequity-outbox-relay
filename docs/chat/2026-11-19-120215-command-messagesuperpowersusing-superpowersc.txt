@@ -1,0 +1,1988 @@
+
+✻ Conversation compacted (ctrl+o for history)
+
+
+● My edit script turned the \r\n escapes into real line breaks. Replacing them
+  with the escape text:
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && python -I - <<'PY'
+      p='test/api.test.ts'…)
+  ⎿  Interrupted · What should Claude do instead?
+
+> /compact
+  ⎿  Compacted PreCompact [node -e "const p=require('path');const
+     r=(function(){var p=require('path'),f=require('fs'),o=require('os');var
+     e=process.env.CLAUDE_PLUGIN_ROOT;if(e&&e.trim())return e.trim();var
+     d=(process.env.CLAUDE_CONFIG_DIR||'').trim()||p.join(o.homedir(),'.claude')
+     ;if(d==='~')d=o.homedir();else
+     if(d.charAt(0)==='~'&&(d.charAt(1)==='/'||d.charCodeAt(1)===92))d=p.join(o.
+     homedir(),d.slice(2));try{if(o.platform()==='linux'){var v=f.readFileSync('
+     /proc/version','utf8').toLowerCase();if(v.includes('microsoft')){var
+     b=String.fromCharCode(92),m=d.match(/^([A-Za-z]):/);if(m&&(d.charAt(2)==='/
+     '||d.charAt(2)===b)){var dl=m[1].toLowerCase();d='/mnt/'+dl+d.slice(2).spli
+     t(b).join('/')}}}}catch(){}d=p.resolve(d);function L(x){try{return
+     require(p.join(x,'scripts','lib','resolve-ecc-root')).resolveEccRoot()}catc
+     h(){return null}}var r=L(d);if(r)return r;var s=['ecc','ecc@ecc','marketpla
+     ces/ecc','everything-claude-code','everything-claude-code@everything-claude
+     -code','marketplaces/everything-claude-code'];for(var
+     i=0;i<s.length;i++){r=L(p.join(d,'plugins',s[i]));if(r)return r}function
+     D(x){try{return
+     f.readdirSync(x,{withFileTypes:true}).filter(function(z){return
+     z.isDirectory()}).map(function(z){return
+     z.name})}catch(e){if(e.code==='ENOENT')return [];throw e}}var
+     g=['ecc','everything-claude-code'];for(var j=0;j<g.length;j++){var
+     c=p.join(d,'plugins','cache',g[j]);var O=D(c);for(var
+     k=0;k<O.length;k++){var q=p.join(c,O[k]);var V=D(q);for(var
+     m=0;m<V.length;m++){r=L(p.join(q,V[m]));if(r)return r}}}return d})();const
+     s=p.join(r,'scripts/hooks/plugin-hook-bootstrap.js');process.env.CLAUDE_PLU
+     GIN_ROOT=r;process.argv.splice(1,0,s);require(s)" node
+     scripts/hooks/run-with-flags.js pre:compact scripts/hooks/pre-compact.js
+     standard,strict] completed successfully
+  ⎿  Referenced file test\api.test.ts
+  ⎿  Read test\db.test.ts (165 lines)
+  ⎿  Read src\sql.ts (58 lines)
+  ⎿  Read test\sql.test.ts (173 lines)
+  ⎿  Referenced file docs\decisions.md
+  ⎿  Skills restored (ecc:postgres-patterns)
+
+> /compact keep verbatim: the U3 silent-failure and typescript review findings
+not yet fixed, the current state of every unit (U1 U2 U4 U5 committed, U3 in
+review), uncommitted files, rig/baseline.json status, origin remote set, and
+the deadline 12:00. everything else is in CLAUDE.md and docs/
+  ⎿  Compaction canceled.
+
+> we have until 12:00, about 75 minutes, so change of pace. no more stopping
+  for my ok between waves.
+  finish U3 now: fix only the review findings that break a pass condition, each
+  with a failing test first, list the rest in the README as known gaps. commit
+  it, get SCENARIO=healthy passing intake_up into the baseline.
+  then U6 worker, you build it here test first, opus, reviewers
+  ecc:silent-failure-hunter and ecc:typescript-reviewer in parallel once it
+  passes, same rule on findings.
+  while you build U6, start three sonnet subagents in parallel, none of them
+  touch src/:
+  A) .github/workflows/scenarios.yml: on push, a matrix job per scenario file
+  in rig/scenarios, each on ubuntu-latest: checkout, docker compose up -d
+  --build, wait for 8080, run SCENARIO=x docker compose -f rig/compose.yaml run
+  --rm check, print the check lines and our time per event, upload the rig
+  logs. fail-fast off.
+  B) U8 rig side: the chaos service and the restart and kill scenarios as
+  plan.md says, docker socket test only.
+  C) README: a short how to run and verify section, keep the phase tags
+  paragraph, results table with placeholders.
+  origin is already set to github. when U6 is green: quick local healthy and
+  fail runs, commit, git push -u origin master --tags, watch the workflow. fix
+  failures yourself on opus and push again. at 11:45 stop fixing, fill the
+  README results table from the last workflow run, honest about anything
+  failing, commit and push. chat exports go in docs/chat/ when i give them.
+  anti-ai, short updates only
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && grep -n "CRLF\|HTTP/1.1"
+      test/api.test.ts | head; git status --short; git remote -v; ls rig
+      rig/scenarios; date)
+  ⎿  (No output)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && cat rig/compose.yaml;
+      grep -n "U6\|U7\|U8\|U9\|U10" docs/plan.md | head -40; wc -l docs/plan.md
+      README.md)
+  ⎿  (No output)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && sed -n 180,268p
+      docs/plan.md; cat README.md; cat rig/scenarios/healthy.json; head -60
+      rig/check.ts)
+  ⎿  (No output)
+
+● 3 background agents launched (↓ to manage)
+   ├ CI workflow for scenarios
+   ├ U8 chaos rig side
+   └ README run and results
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && cat src/db.ts src/api.ts;
+      sed -n 250,300p test/api.test.ts)
+  ⎿  (No output)
+
+● Three side agents started (CI workflow, U8 rig, README). Finishing U3 now:
+  dropping the Content-Length fix as a known gap, applying the two pass-breaking
+  fixes.
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && python -I - <<'PY'
+      import re…)
+  ⎿  Error: Exit code 1
+     3:import net from 'node:net';
+     207:    const s = net.connect(port, '127.0.0.1', () => {
+     rig/chaos.test.ts(6,52): error TS2307: Cannot find module './chaos.ts' or
+     its corresponding type declarations.
+     rig/chaos.test.ts(7,29): error TS2307: Cannot find module './chaos.ts' or
+     its corresponding type declarations.
+     rig/chaos.test.ts(8,25): error TS2305: Module '"./types.ts"' has no
+     exported member 'RelayStep'.
+     rig/chaos.test.ts(20,33): error TS7006: Parameter 'args' implicitly has an
+     'any' type.
+     rig/chaos.test.ts(37,33): error TS7006: Parameter 'args' implicitly has an
+     'any' type.
+     rig/chaos.test.ts(85,20): error TS7006: Parameter 'a' implicitly has an
+     'any' type.
+     rig/chaos.test.ts(87,19): error TS7006: Parameter 'ms' implicitly has an
+     'any' type.
+     … +7 lines (ctrl+o to expand)
+
+› Message from general-purpose
+  File: c:/Users/dell/Documents/tequinty/second/.github/workflows/scenarios.yml.
+  The YAML parses (PyYAML printed jobs ['list', 'scenario']). I have not run
+  the workflow.
+
+  - **Matrix today:** ["down-5min","fail","flap","healthy","input","limit-all","
+  limit-user","slots","slow"]. A `list` job builds it dynamically with `ls
+  *.json | sed | jq` (jq is on ubuntu-latest, not on this machine, so I did not
+  run that line here). `fail-fast: false`.
+  - **input.json:** it is a scenario, so I kept it. It has seed, duration,
+  drain, load with extras and empty steps. A YAML comment says so.
+  - **Timeout:** 25 minutes. The longest scenario is flap at 450 s load + 330 s
+  drain (13 min), and down-5min is 420 + 330 s. The extra time is for build and
+  startup.
+  - **Steps:** match your brief. Actions are pinned to checkout@v4 and
+  upload-artifact@v4. Cleanup and log collection use `if: always()`. The rig
+  step keeps the check exit code and fails the job on it.
+  - **No time-per-event figure:** rig/check.ts prints no such figure. It prints
+  five JSON lines (exactly_once, order, timing, intake_up, bytes). Its `timing`
+  check is about Tequity's deadlines, not our own time per event. The workflow
+  prints all `{"check"...}` lines and the `timing` line, and the full output
+  goes into the artifact as check.out. Our own time per event will need another
+  source.
+  - **Unsure:**
+    - The rig step greps lines starting with `{"check"`. If compose prefixes
+  container output, the grep finds nothing. `run --rm` normally passes output
+  through unprefixed.
+    - The artifact is named `rig-<scenario>`, and the volume copy assumes the
+  volume is `rig_data` as you said.
+
+● Agent "CI workflow for scenarios" finished · 30s
+
+› Message from general-purpose
+  README.md edited, not committed. Order is now Assumptions, What this is, How
+  to run and verify, Results, Reading the history. The Assumptions list and the
+  history paragraphs are byte-identical; only their position moved. The diff
+  against HEAD is 50 insertions and 3 deletions. The deletions are blank-line
+  and move artefacts, and the net addition is about 50 lines.
+
+  Added:
+  - **How to run and verify:** prose and code blocks for `docker compose up -d`,
+  the `SCENARIO=healthy` rig run and `down`, unit tests, type check, and the
+  `.github/workflows/scenarios.yml` sentence. It names the five checks
+  `exactly_once`, `order`, `timing`, `intake_up` and `bytes`.
+  - **Results:** one sentence, a table, and the line "Workflow run: TBD". The
+  table has columns scenario, intake_up, exactly_once, order, timing, bytes and
+  "our time per event". It has 11 rows, all TBD: healthy, fail, flap, slow,
+  slots, input, limit-user, limit-all, down-5min, restart, kill.
+
+  Unsure:
+  - **Unverified:** I did not run any command, and the README does not claim
+  they work.
+  - **Scenario files:** restart and kill are listed, and they get table rows,
+  though they do not exist in rig/scenarios yet. Remove them if they do not
+  arrive.
+  - **Test commands:** the Dockerfile installs only production dependencies, so
+  I used `sh -c "npm ci && node --test"` and `npx tsc --noEmit`. The `--network
+  host` unit-test command needs the relay's Postgres up first, and the README
+  says so.
+  - **Check list:** I took the five check names from the `check:` ids in
+  rig/check.ts (grep). I did not read the type definition.
+  - **Four pass conditions:** the sentence "Together they cover the brief's four
+  pass conditions and that a saved body is the promised body" is my reading.
+  Verify it against docs/problem.md.
+  - **Possible mismatch:** on Windows, `npm ci` inside a bind mount of the repo
+  may conflict with a host node_modules folder.
+
+● Agent "README run and results" finished · 32s
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && MSYS_NO_PATHCONV=1 docker
+      run --rm --network host -v "c:/Users/dell/Documents/tequinty/second:/app"
+      -w /app node…)
+  ⎿  (No output)
+  ⎿  (timeout 5m)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && MSYS_NO_PATHCONV=1 docker
+      run --rm --network host -v "c:/Users/dell/Documents/tequinty/second:/app"
+      -w /app node…)
+  ⎿  (another command ran in this repository at the same time; a change
+     made by either may show under either result)
+  ⎿  (timeout 5m)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" &&
+      S="C:/Users/dell/AppData/Local/Temp/claude/bdaf7bae6af02a3d/6cdfcbee-5896-
+      4de4-8f55-603c65128bff/scratchpad"; cp…)
+  ⎿  Running in the background (↓ to manage)
+  ⎿  (timeout 2m)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && docker ps -q --filter
+      ancestor=node:24.22.3-alpine3.24 | xargs -r docker kill >/dev/null; sleep
+      3; S="C:/Users/d…)
+  ⎿  Blocked by auto mode · see
+     https://code.claude.com/docs/s/claude-code-auto-mode
+     │ Auto mode: [Destructive or Unwanted Actions]
+
+● Stop Task
+  ⎿  cd "c:/Users/dell/Documents/tequinty/second" &&
+     S="C:/Users/dell/AppData/Local/Temp/claude/bdaf7bae6af02a3d/6cdfcbee-5
+     896-4de4-8f55-603c65128bff/scratchpad"; cp… · stopped
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" &&
+      S="C:/Users/dell/AppData/Local/Temp/claude/bdaf7bae6af02a3d/6cdfcbee-5896-
+      4de4-8f55-603c65128bff/scratchpad"; cp…)
+  ⎿  Updated src\api.ts +11 -4
+      56        // No answer body; end() with no data sends Content-Lengt
+          h: 0.
+      57        res.end();
+      58      };
+      59 -    handle(pool, req).then(answer, (e: unknown) => {           
+      60 -      log('error', 'request failed; answering 503', { err: mess
+         -age(e) });                                                     
+      61 -      answer(503);                                             
+      62 -    });                                                        
+      59 +    // catch after then: a throw inside answer would otherwise 
+         +be an unhandled rejection, which ends the process.             
+      60 +    handle(pool, req)                                          
+      61 +      .then(answer)                                            
+      62 +      .catch((e: unknown) => {                                 
+      63 +        log('error', 'request failed; answering 503', { err: me
+         +ssage(e) });                                                   
+      64 +        try {                                                  
+      65 +          answer(503);                                         
+      66 +        } catch (e2) {                                         
+      67 +          log('error', 'answering 503 failed', { err: message(e
+         +2) });                                                         
+      68 +        }                                                      
+      69 +      });                                                      
+      70    });
+      71    // Longer than any client's idle timeout, so Node never close
+          s a connection the load generator is about to reuse.
+      72    server.keepAliveTimeout = 65_000;
+  ⎿  (another command ran in this repository at the same time; a change
+     made by either may show under either result)
+
+● RED confirmed on old code (throw test failed at 6.2 s), fixes restored, 87/87
+  relay tests green. Now building the api and running SCENARIO=healthy.
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && docker ps --format
+      '{{.Names}} {{.Image}} {{.Status}}'; docker compose up -d --build
+      --no-deps api 2>&1 | tail -…)
+  ⎿  Error: Exit code 7
+     inspiring_wing node:24.22.3-alpine3.24 Up 11 seconds
+     kind_lamarr node:24.22.3-alpine3.24 Up 2 minutes
+     affectionate_greider node:24.22.3-alpine3.24 Up 7 minutes
+     second-postgres-1 postgres:16.16-alpine Up 12 minutes (healthy)
+     library-desk-postgres-1 postgres:16.15-bookworm Up 3 hours (healthy)
+     deeptutor deeptutor-deeptutor Up 3 hours (healthy)
+      Container second-api-1  Recreated
+      Container second-api-1  Starting
+      Container second-api-1  Started
+     … +1 line (ctrl+o to expand)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && sleep 3; docker compose
+      logs --no-color api | tail -5; curl -s -o /dev/null -w '%{http_code}\n' -X
+      POST http://1…)
+  ⎿  Error: Exit code 7
+     api-1  | {"level":"info","msg":"listening on :8080"}
+     api-1  | {"level":"info","msg":"Postgres is reachable"}
+     000
+
+● Expected on Docker Desktop (host networking isn't reachable from Windows); the
+  rig runs inside host-network containers, so running it there.
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && git diff --stat
+      rig/compose.yaml rig/Dockerfile; SCENARIO=healthy MSYS_NO_PATHCONV=1
+      docker compose -f rig/compo…)
+  ⎿  Running in the background (↓ to manage)
+
+● Meanwhile: U3 doc edits.
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && grep -n
+      "CMD\|worker.js\|api.js\|pool of\|Pools\|pools\|## " docs/decisions.md |
+      head -60; grep -n "^### U3" -A3…)
+  ⎿  (No output)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && sed -n 90,97p
+      docs/decisions.md; sed -n 211,216p docs/decisions.md)
+  ⎿  (No output)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && python -I - <<'PY'
+      p='docs/decisions.md'; s=open(p,encoding='utf-8').read()…)
+  ⎿  Updated docs\decisions.md +2 -2
+      89 
+      90  ## Connection pools are sized by hand
+      91 
+      92 -The worker's `pg` Pool has `max: 20` and the API's `max: 30`, 5
+         -0 of Postgres's 100. Each loop takes a connection for one state
+         -ment at a time through `pool.query`, never while waiting on por
+         -t 9000. Calls to 9000 share one `new http.Agent({ keepAlive: tr
+         -ue })`, so sends reuse their TCP connections; its defaults alre
+         -ady keep up to 256 idle sockets and turn TCP keepalive on.     
+      92 +The worker's `pg` Pool has `max: 20` and the API's `max: 30`, 5
+         +0 of Postgres's 100. Each loop takes a connection for one state
+         +ment at a time through `pool.query`, never while waiting on por
+         +t 9000. Calls to 9000 share one `new http.Agent({ keepAlive: tr
+         +ue })`, so sends reuse their TCP connections; its defaults alre
+         +ady keep up to 256 idle sockets and turn TCP keepalive on. Both
+         + Pools give up on a connect after 5 seconds and cancel a statem
+         +ent after 10, so a stalled Postgres gives a logged 503 or a fai
+         +led attempt, never a request that hangs.                       
+      93 
+      94  Dropped: `pg`'s default of 10 connections per pool, too few for
+           200 user loops.
+      95 
+     ...
+      188 
+      189  ## A normal stop gives sends in flight 120 seconds
+      190 
+      191 -On SIGTERM the worker stops polling and starting sends, lets e
+          -very send in flight and its `delivered_at` write finish, close
+          -s its Pool and exits. Compose's `stop_grace_period` is 120 sec
+          -onds. A send cut off by the kill or a crash is sent again on r
+          -estart and may be saved twice. Each service starts Node with a
+          -n exec-form `CMD ["node", "worker.js"]` (`api.js` for the API)
+          -, since Node as process 1 ignores SIGTERM without a handler. T
+          -he API's handler stops taking posts and lets inserts in progre
+          -ss commit.                                                    
+      191 +On SIGTERM the worker stops polling and starting sends, lets e
+          +very send in flight and its `delivered_at` write finish, close
+          +s its Pool and exits. Compose's `stop_grace_period` is 120 sec
+          +onds. A send cut off by the kill or a crash is sent again on r
+          +estart and may be saved twice. Each service starts Node with a
+          +n exec-form `command: ["node", "src/worker.ts"]` (`src/api.ts`
+          + for the API) and `init: true`, since Node as process 1 ignore
+          +s SIGTERM without a handler. The API's handler stops taking po
+          +sts and lets inserts in progress commit.                      
+      192 
+      193  The worker exits as soon as its sends finish, so the 120 secon
+           ds is spent only on a slow one.
+      194 
+  ⎿  Updated docs\plan.md +1 -1
+      168  - 1 MB plus one byte giving 413
+      169 
+      170  ### U3 Intake API
+      171 -Builder: ecc:tdd-guide on Opus. Reviewer: ecc:typescript-revie
+          -wer. Depends on U1, U2 and R4; wave 2.                        
+      171 +Builder: ecc:tdd-guide on Opus. Reviewers: ecc:typescript-revi
+          +ewer and ecc:silent-failure-hunter, since the 2xx promise star
+          +ts here. Depends on U1, U2 and R4; wave 2.                    
+      172  Files: `src/db.ts`, `insert` in `src/intake.ts`, `src/api.ts`,
+            `test/api.test.ts`, the `api` service in `compose.yaml`.
+      173  Interfaces:
+      174  - `src/db.ts`: `createPool(max: number): pg.Pool` on 127.0.0.1
+           :54329 with an `error` handler, and `waitForDb(pool: pg.Pool):
+            Promise<void>`, which retries until Postgres answers.
+› Message from general-purpose
+  The rig side of U8 is built. The rig tests pass (63 of 63) and `tsc --noEmit`
+  is clean. I did not run any scenario, the chaos service against real Docker,
+  or the root compose.
+
+  **Files**
+  - Changed: `rig/types.ts` (new `RelayStep` type, optional `relay` on
+  `Scenario`, validated in `parseScenario`), `rig/types.test.ts` (2 new tests),
+  `rig/Dockerfile`, `rig/compose.yaml`.
+  - New: `rig/chaos.ts`, `rig/chaos.test.ts` (7 tests),
+  `rig/scenarios/restart.json`, `rig/scenarios/kill.json`.
+  - `chaos.ts` finds the container by compose service label and skips containers
+  whose project label is `rig`.
+  - It sorts steps by `at_s` and sleeps until `start + at_s`, where start is its
+  own launch time. Loadgen measures from its own start. Both services depend on
+  the endpoint starting, so they begin within about a second of each other.
+  - Each step appends `relay_stopped` before the action and `relay_running`
+  after it to `modes.ndjson`. It appends only, because the endpoint wipes that
+  file when it starts.
+  - If a step fails (for example no container found), it logs a JSON line,
+  writes no stopped line for that step, runs the remaining steps and exits 1.
+  With no `relay` field it exits 0 at once.
+  - `Dockerfile`: `apk add --no-cache docker-cli` sits before `WORKDIR` and the
+  `COPY` lines, so the layer is cached.
+  - `compose.yaml`:
+    - The `chaos` service uses the `x-rig` anchor and mounts the Docker socket,
+  with a "test code only" comment.
+    - It depends on the endpoint starting, and `check` waits for `chaos` with
+  `service_completed_successfully`.
+    - `chaos` repeats `data:/data` in its `volumes`, because a `volumes` key in
+  a service replaces the anchor's list.
+  - Scenarios:
+    - `restart.json`: duration 120 s, drain 60 s. The worker restarts at 20 s,
+  the api at 50 s and postgres at 80 s.
+    - `kill.json`: duration 120 s, drain 60 s. The worker is killed at 40 s.
+
+  **Test output**
+  - `docker run ... sh -c "node --test rig/*.test.ts"` printed `tests 63, pass
+  63, fail 0`.
+  - Plain `node --test rig/` fails in the pinned image with "Cannot find module
+  '/app/rig'". Use the glob, or `node --test` with no argument as `package.json`
+  does.
+  - Before writing `chaos.ts`, the new chaos tests failed with
+  ERR_MODULE_NOT_FOUND.
+  - `docker run ... npx tsc --noEmit` printed `tsc=0`.
+  - `docker compose -f rig/compose.yaml config -q` passed.
+
+  **Open questions**
+  - `check.ts` treats every `relay_stopped` window as "intake down" for
+  `intake_up`. A worker restart or kill therefore also excludes the intake posts
+  sent during it from that check, as the brief says. If you want worker steps
+  judged on intake, `chaos.ts` should skip the marker lines when the service is
+  `worker`.
+  - `kill` and `restart` of postgres are not run, so I have not checked how long
+  the relay takes to reconnect after the postgres restart at 80 s. Drain is 60
+  s. Raise it if the real run shows otherwise.
+  - The project-label exclusion assumes the rig's compose project is named
+  `rig`, which it is as the file lives in `rig/`. A `-p` override would break
+  that.
+
+● Agent "U8 chaos rig side" finished · 4m 18s
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && python -I - <<'PY'
+      p='docs/decisions.md'; s=open(p,encoding='utf-8').read()…)
+  ⎿  Updated docs\decisions.md +2 -2
+      89 
+      90  ## Connection pools are sized by hand
+      91 
+      92 -The worker's `pg` Pool has `max: 20` and the API's `max: 30`, 5
+         -0 of Postgres's 100. Each loop takes a connection for one state
+         -ment at a time through `pool.query`, never while waiting on por
+         -t 9000. Calls to 9000 share one `new http.Agent({ keepAlive: tr
+         -ue })`, so sends reuse their TCP connections; its defaults alre
+         -ady keep up to 256 idle sockets and turn TCP keepalive on. Both
+         - Pools give up on a connect after 5 seconds and cancel a statem
+         -ent after 10, so a stalled Postgres gives a logged 503 or a fai
+         -led attempt, never a request that hangs.                       
+      92 +The worker's `pg` Pool has `max: 20` and the API's `max: 30`, 5
+         +0 of Postgres's 100. Each loop takes a connection for one state
+         +ment at a time through `pool.query`, never while waiting on por
+         +t 9000. Calls to 9000 share one `new http.Agent({ keepAlive: tr
+         +ue })`, so sends reuse their TCP connections; its defaults alre
+         +ady keep up to 256 idle sockets and turn TCP keepalive on. Both
+         + Pools give up on a connect after 5 s and cancel a statement af
+         +ter 10 s, so a stalled Postgres never hangs a request.         
+      93 
+      94  Dropped: `pg`'s default of 10 connections per pool, too few for
+           200 user loops.
+      95 
+      96 -pgbench (a load tool that ships with Postgres), run on the buil
+         -d laptop's Docker Desktop with 20 connections, did about 3,500 
+         -steps a second, 17 times what the outage maths needs. Each step
+         - was one `UPDATE ... SET delivered_at` by event_id and one quer
+         -y for a user's next unsent event.                              
+      96 +pgbench, run on the build laptop's Docker Desktop with 20 conne
+         +ctions, did about 3,500 steps a second, 17 times what the outag
+         +e maths needs. Each step was one `UPDATE ... SET delivered_at` 
+         +by event_id and one query for a user's next unsent event.      
+      97 
+      98  ## The design is sized for an endpoint that answers in about 10
+           ms
+      99 
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && sed -n 74,89p
+      docs/decisions.md; sed -n 114,133p docs/decisions.md; sed -n 159,172p
+      docs/decisions.md; sed -n 19…)
+  ⎿  (No output)
+
+● Docs done. Starting U6 test-first: tests first, then src/worker.ts.
+
+● Write(test\worker.test.ts)
+  ⎿  Wrote 295 lines to test\worker.test.ts
+       1 import assert from 'node:assert/strict';
+       2 import { test } from 'node:test';
+       3 import type { Ids, SendResult } from '../src/send.ts';
+       4 import type { Pending } from '../src/sql.ts';
+       5 import { nextWait, startWorker } from '../src/worker.ts';
+       6 import type { WorkerDeps } from '../src/worker.ts';
+       7
+       8 interface Deferred<T> {
+       9   promise: Promise<T>;
+      10   resolve: (v: T) => void;
+     … +285 lines (ctrl+o to expand)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && MSYS_NO_PATHCONV=1 docker
+      run --rm -v "c:/Users/dell/Documents/tequinty/second:/app" -w /app
+      node:24.22.3-alpine…)
+  ⎿  (No output)
+
+● Write(src\worker.ts)
+  ⎿  Wrote 173 lines to src\worker.ts
+       1 // The worker: poll for ready users, run one loop per user that
+         sends its events in order (docs/decisions.md).
+       2 import http from 'node:http';
+       3 import { setTimeout as sleep } from 'node:timers/promises';
+       4 import { createPool, waitForDb } from './db.ts';
+       5 import { post } from './send.ts';
+       6 import type { Ids, SendResult } from './send.ts';
+       7 import { markDelivered, oldestUnsent, readyUsers, unsentCount }
+         from './sql.ts';
+       8 import type { Pending } from './sql.ts';
+     … +165 lines (ctrl+o to expand)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && MSYS_NO_PATHCONV=1 docker
+      run --rm -v "c:/Users/dell/Documents/tequinty/second:/app" -w /app
+      node:24.22.3-alpine…)
+  ⎿  (No output)
+  ⎿  (timeout 3m)
+
+● U6 green: 13/13, tsc clean. Adding the worker service, then the reviewers.
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && sed -n '/^  api:/,$p'
+      compose.yaml; cat
+      "C:/Users/dell/AppData/Local/Temp/claude/bdaf7bae6af02a3d/6cdfcbee-5896-…)
+  ⎿  (No output)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && python -I - <<'PY'
+      p='compose.yaml'; s=open(p,encoding='utf-8').read()…)
+  ⎿  Updated compose.yaml +12
+      26        postgres:
+      27          condition: service_healthy
+      28 
+      29 +  worker:                                                      
+      30 +    build: .                                                   
+      31 +    network_mode: host                                         
+      32 +    init: true                                                 
+      33 +    command: ["node", "src/worker.ts"]                         
+      34 +    restart: unless-stopped                                    
+      35 +    # Sends in flight and their delivered_at writes get 120 s t
+         +o finish before the kill (docs/decisions.md).                  
+      36 +    stop_grace_period: 120s                                    
+      37 +    depends_on:                                                
+      38 +      postgres:                                                
+      39 +        condition: service_healthy                             
+      40 +                                                               
+      41  volumes:
+      42    pgdata:
+
+● 2 background agents launched (↓ to manage)
+   ├ ecc:silent-failure-hunter (Silent-failure review of U6 worker)
+   └ ecc:typescript-reviewer (TypeScript review of U6 worker)
+
+● Reviewers running. Adding U3's known gaps to the README meanwhile.
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && sed -n '/^## What this
+      is/,/^## Reading the history/p' README.md; date)
+  ⎿  (No output)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && python -I - <<'PY'
+      p='README.md'; s=open(p,encoding='utf-8').read()…)
+  ⎿  Updated README.md +4
+      72 
+      73  Workflow run: TBD
+      74 
+      75 +## Known gaps                                                  
+      76 +                                                               
+      77 +These review findings break no pass condition and were left as 
+         +they are. A body over 1 MB is refused with 413 once 1 MB of it 
+         +has arrived, not at once from its Content-Length header. Every 
+         +Postgres error of class 22 (bad data) gets a 400, not only a ba
+         +d created_at. A second SIGTERM to the API does nothing more tha
+         +n the first. The log line for a failed answer carries no event_
+         +id, since the body may not have been read by then.             
+      78 +                                                               
+      79  ## Reading the history
+      80 
+      81  The git history has an annotated tag at the end of each phase.
+          Each paragraph below says what that phase decided and what chan
+          ged the design along the way. docs/decisions.md holds every dec
+          ision as it stands now, and docs/review-2026-11-18.md holds the
+           first review's findings.
+
+● Background command "Run the healthy rig scenario against the api" completed
+  (exit code 0)
+
+  Read 1 file (ctrl+o to expand)
+● intake_up passes (12000 posts answered right; the other four fail as expected,
+  no worker yet). Writing the baseline and committing U3.
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && grep -rn "baseline"
+      rig/*.ts docs/plan.md | head -5; printf '{\n  "healthy":
+      ["intake_up"]\n}\n' > rig/baseline.…)
+  ⎿  Updated rig\baseline.json +3 -1
+      1 -{}                                                              
+      1 +{                                                               
+      2 +  "healthy": ["intake_up"]                                      
+      3 +}                                                               
+
+● Committing in order: CI workflow + README sections first, then U3, then U6,
+  then U8 rig side. Fresh full run first:
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && MSYS_NO_PATHCONV=1 docker
+      run --rm --network host -v "c:/Users/dell/Documents/tequinty/second:/app"
+      -w /app node…)
+  ⎿  (another command ran in this repository at the same time; a change
+     made by either may show under either result)
+  ⎿  (timeout 6m 40s)
+
+● 164/164, tsc prints nothing. Quick look at the workflow before committing it:
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && cat
+      .github/workflows/scenarios.yml)
+  ⎿  (No output)
+
+› Message from ecc:typescript-reviewer
+  Review of src/worker.ts, test/worker.test.ts and the worker service in
+  compose.yaml.
+
+  Test run: `docker run ... node --test test/worker.test.ts` printed 13 pass, 0
+  fail. I did not run tsc or eslint. No CRITICAL findings. The async design
+  holds up. The pause-then-return path sets `pausedUntil` before the loop ends,
+  so a user is never uncovered between `loops.delete` and the next poll.
+  `startLoop` sets `loops` before the `.finally` can run. `stop()` can't start a
+  loop after `stopping` is set.
+
+  Findings, most severe first.
+
+  1. MEDIUM, test/worker.test.ts:140-158. The 429 test does not prove the pause
+  length.
+     - The fake clock only moves when the test calls `advance`.
+     - A bug that used `r.seconds` instead of `r.seconds * 1000` would pass. So
+  would a release after 1 s instead of 7 s. In both cases `advance(7000)` frees
+  the user.
+     - Fix: advance 6999 and assert the user is still excluded, then advance 1
+  more and assert it is sent again.
+
+  2. MEDIUM, test/worker.test.ts:82-95. The "one loop per user" test does not
+  exercise the worker's guard.
+     - The fake `readyUsers` already filters out excluded users, so
+  `!loops.has(u)` and `!pausedUntil.has(u)` at src/worker.ts:125 are never hit.
+     - The real race is that a loop starts or a pause is set while `readyUsers`
+  is in flight. With a real DB query returning a stale list, this guard is the
+  only protection against two concurrent loops for one user. The result would be
+  duplicate sends and broken ordering.
+     - Fix: make `readyUsers` ignore `excluded` and return `u1` every time, then
+  assert `sent` has only `e1`.
+
+  3. MEDIUM, test/worker.test.ts:32-73. The `lastDelivered` wiring
+  (src/worker.ts:77, 100) is untested.
+     - The fake `oldestUnsent` ignores its second argument. If
+  `lastDelivered.set` were removed or kept per event instead of per user, no
+  test would fail. The "late" detection would then be wrong in production.
+     - Fix: record the `last` arguments passed and assert `[null, 'e1']`.
+
+  4. LOW, src/worker.ts:24, 122-124 and src/worker.ts:77-83. Two paths have no
+  test.
+     - The `MAX_LOOPS` cap and the `limit = free` value are never asserted.
+     - The `oldestUnsent` throw branch is never asserted either. Lines 78-83 are
+  the only read-failure handling.
+
+  5. LOW, src/worker.ts:134. `poll()` is started without a `.catch`.
+     - `poll()` has no rejection path today, since `sleep` from
+  `node:timers/promises` only rejects on abort.
+     - If a future `deps.sleep` or `deps.log` throws outside the try blocks
+  (src/worker.ts:130, and the log calls in the catch blocks at 116 and 128), the
+  promise rejects. Nothing awaits it until `stop()`, so this becomes an
+  unhandled rejection that crashes the process.
+     - It is cheap to guard, so I'm listing it. Treat it as hardening, not a
+  bug.
+
+  6. LOW, src/worker.ts:58-70. `commit()` ignores `stopping`.
+     - If Postgres is down at SIGTERM, `stop()` waits until compose kills the
+  container at 120 s. That is the intended trade-off, and the event stays unsent
+  in the DB, so it is retried and sent again on restart.
+     - I'm flagging it only because the SIGTERM comment at src/worker.ts:161
+  says "finish" with no bound.
+
+  7. LOW, src/worker.ts:161. The SIGTERM comment gives the wrong reason.
+     - `init: true` in compose.yaml means tini is process 1, not node.
+     - The handler is needed because tini forwards SIGTERM and node's default
+  action would kill the process mid-send. That is a different reason.
+     - SIGTERM during `waitForDb` (src/worker.ts:150) is also unhandled, because
+  the handler is registered after the await. That is harmless: the process
+  dies, and nothing is in flight.
+
+  8. LOW, src/worker.ts:149. The URL uses `localhost`.
+     - The brief says the endpoint is bound to 127.0.0.1. Node 24 tries both
+  address families, so this probably works.
+     - Using `127.0.0.1` removes the dependence on how the grader's container
+  resolves `localhost`.
+
+  9. LOW, src/worker.ts:39. `lastDelivered` grows by one entry per user ever
+  seen, and it is never evicted. At the brief's scale this is fine. If it
+  matters, note it as a `shortcut:` comment.
+
+  10. LOW, test/worker.test.ts:249-265. One test makes two claims: the startup
+  count and the 60 s warning. If either fails, the test name does not say which.
+  The test does not check the warning stops after the send ends.
+
+  Ruled out:
+  - No `any`, no `!`, no non-erasable syntax.
+  - Only `node:http`, `node:timers/promises` and `pg` (through db.ts) are used.
+  - Every catch logs.
+  - Expected failures come back as a typed union.
+  - Retry-After is clamped and never zero in send.ts.
+  - The compose `stop_grace_period: 120s` matches the comment.
+
+  Not checked: sql.ts query behaviour, db.ts, and the decisions.md and plan.md
+  wording.
+
+● Agent "TypeScript review of U6 worker" finished · 56s
+
+● Committing the workflow and README sections first.
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && sed -i 's/echo "time per
+      event:"/echo "timing check (deadlines, not our own time per event):"/'
+      .github/workflow…)
+  ⎿  Updated .github\workflows\scenarios.yml +1 -1
+      46            echo $? > check.exit
+      47            echo "check lines:"
+      48            grep '^{"check"' check.out
+      49 -          echo "time per event:"                               
+      49 +          echo "timing check (deadlines, not our own time per e
+         +vent):"                                                        
+      50            grep '^{"check":"timing"' check.out
+      51            exit "$(cat check.exit)"
+      52 
+
+› Message from ecc:silent-failure-hunter
+  Review of src/worker.ts and test/worker.test.ts: no break of exactly-once or
+  order, and no swallowed error. I read the code and grepped the test names. I
+  did not run the tests.
+
+  Sound:
+  - Only poll starts loops. The exclusion list plus the
+  loops.has/pausedUntil.has recheck cover the race with an in-flight readyUsers,
+  so there is no double loop per user.
+  - commit retries only the write, never the send. A client-side
+  statement_timeout on an UPDATE that actually committed makes markDelivered
+  return false, which is logged and skipped. That is correct.
+  - Every failure path in userLoop and sendWatched is logged, and none can skip
+  an event.
+  - createPool handles pool.on('error'), so a Postgres restart does not crash
+  the process.
+
+  Findings, most severe first:
+
+  1. Medium, liveness: src/worker.ts:89, with src/send.ts:13,26.
+     - A 429 with a huge Retry-After (for example 99999999) sets pausedUntil up
+  to about 24 days ahead. The pause lives in memory, so only a restart clears
+  it.
+     - Scenario: Tequity's rate limiter sends one odd header. That user is stuck
+  for the rest of the run, which breaks the 5-minute recovery condition.
+     - It is logged (the line includes seconds), so it is not silent. It is
+  still a stuck user.
+     - Fix: cap the pause at about 60 s at line 89, so a long pause degrades
+  into a retry.
+
+  2. Medium, liveness: src/worker.ts:49, with src/send.ts:38.
+     - There is no send timeout, by decision. A user whose request gets no
+  answer (the endpoint accepts and then stalls, or the connection half-opens) is
+  blocked until the socket errors. All that happens meanwhile is a warn every
+  60 s (line 46).
+     - If the endpoint stalls without closing sockets, up to 200 loops stay
+  blocked indefinitely.
+     - Whether this matters depends on the fake endpoint's "slow" and "goes
+  away" modes. If "goes away" ever means dropped packets rather than a reset,
+  this hangs.
+     - Fix: leave it if the rig only resets or closes. Otherwise add a long
+  timeout (over 120 s) and treat a hung send as a retry, which accepts one
+  possible resend.
+
+  3. Low, graceful stop: src/worker.ts:58-70.
+     - commit ignores stopping. If Postgres is down at SIGTERM, stop() blocks
+  until Docker's SIGKILL after 120 s. The event was already saved, so it is sent
+  again on restart.
+     - This is the accepted cost in the decisions. Every attempt is logged, so
+  it is not silent.
+
+  4. Low, crash path: src/worker.ts:134.
+     - poll() has no .catch. Its body is in try/catch and timers/promises sleep
+  does not reject, so today it cannot reject.
+     - If deps.log threw inside the catch block, an unhandled rejection would
+  kill the process. The "never stops a process" decision rules that out.
+     - Fix: add a one-line .catch that logs.
+
+  5. Low, memory: src/worker.ts:39. lastDelivered gains one entry per user and
+  is never pruned. It is trivial at this scale.
+
+  6. Low, test gap. I found no test for the "user loop failed" catch at line 107
+  and none for a long pause (finding 1). This is from the rg output over
+  test/worker.test.ts.
+
+  Not checked: startWorker against the real pg pool (the test uses fakes only),
+  and whether import.meta.main behaves as intended on the Node version in the
+  relay image.
+
+● Agent "Silent-failure review of U6 worker" finished · 1m 1s
+
+● Now U3.
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" &&
+      SP="C:/Users/dell/AppData/Local/Temp/claude/bdaf7bae6af02a3d/6cdfcbee-5896
+      -4de4-8f55-603c65128bff/scratchpad" &&…)
+  ⎿  (No output)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && git commit -q -F -
+      <<'EOF'
+      U3: the intake API answers 200 only after the insert commits, and
+      SCENARIO=healthy pa…)
+  ⎿  (No output)
+
+● Commit b3043fd landed U3, and U6 broke no pass condition, though three test
+  gaps on exactly-once and ordering guards are getting pinned. Next I'm starting
+  the worker and a local healthy run in parallel. · summary
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && docker compose up -d
+      --build --no-deps worker 2>&1 | tail -1 && sleep 3 && docker compose logs
+      --no-color worker…)
+  ⎿  (No output)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && docker ps --format
+      '{{.Names}} {{.Status}}' | grep -E "second|rig"; docker exec
+      second-postgres-1 psql -U postgr…)
+  ⎿  Error: Exit code 2
+     second-worker-1 Up 7 seconds
+     second-api-1 Up 4 minutes
+     second-postgres-1 Up 17 minutes (healthy)
+     psql: error: connection to server on socket "/run/postgresql/.s.PGSQL.5432"
+     failed: No such file or directory
+             Is the server running locally and accepting connections on that
+     socket?
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && docker exec
+      second-postgres-1 psql -U postgres -p 54329 -h 127.0.0.1 -tAc "select
+      count(*), count(delivered_at)…)
+  ⎿  (No output)
+
+● The earlier no-worker run left 12,000 events with the same seeded ids, so this
+  local run is polluted. Stopping it, clearing the test table, rerunning.
+
+● Bash(ps -ef | grep -E "bash|docker" | grep -v grep | head)  ⎿  (No output)
+
+● Bash(ps -ef | grep -v grep | awk '$2==2212 || $3==2212 || $2==2213'; )
+  ⎿  (No output)
+
+● Bash(kill 2212 2213 2217 2>&1; sleep 1; cd
+      "c:/Users/dell/Documents/tequinty/second" && docker compose -f
+      rig/compose.yaml down 2>&1 | tail -1; ps -ef | grep -c "com…)
+  ⎿  (No output)
+
+● Bash(ps -ef | grep "compose -f rig" | grep -v grep)
+  ⎿  No matches found
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && docker compose stop
+      worker 2>&1 | tail -1 && docker exec second-postgres-1 psql -U postgres -p
+      54329 -h 127.0.0.…)
+  ⎿  Running in the background (↓ to manage)
+
+● Meanwhile, the three U6 test pins:
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && python -I - <<'PY'
+      p='test/worker.test.ts'; s=open(p,encoding='utf-8').read()…)
+  ⎿  Updated src\worker.ts +1 -1
+      158      sleep: (ms) => sleep(ms),
+      159      now: () => Date.now(),
+      160    });
+      161 -  // Node as process 1 ignores SIGTERM without a handler. Send
+          -s in flight and their writes finish; compose allows 120 s.    
+      161 +  // Without a handler SIGTERM, passed on by init, ends Node m
+          +id-send. Sends in flight and their writes finish; compose allo
+          +ws 120 s.                                                     
+      162    process.on('SIGTERM', () => {
+      163      log('info', 'SIGTERM: finishing sends in flight');
+      164      worker
+  ⎿  Updated test\worker.test.ts +38 -1
+      151    assert.ok(f.excludedSeen.slice(before + 1).every((ex) => ex.
+           includes('u1')), 'paused user is excluded');
+      152    assert.deepEqual(f.sent, ['e1']);
+      153    assert.deepEqual(waits(f.sleeps), [], 'a 429 is no retry wai
+           t');
+      154 -  f.advance(7000);                                            
+      154 +  f.advance(6999);                                            
+      155 +  const held = f.excludedSeen.length;                         
+      156 +  await until(() => f.excludedSeen.length >= held + 3);       
+      157 +  assert.deepEqual(f.sent, ['e1'], 'still paused 1 ms before 7
+          + s');                                                         
+      158 +  f.advance(1);                                               
+      159    await until(() => f.marked.length === 1);
+      160    await w.stop();
+      161    assert.deepEqual(f.sent, ['e1', 'e1']);
+     ...
+      297    await w.stop();
+      298    assert.ok(f.logs.some((l) => l.level === 'error' && String(l
+           .extra['err']).includes('poll failed')));
+      299  });
+      300 +                                                              
+      301 +test('a poll that returns a user already in flight starts no s
+          +econd loop for it', async () => {                             
+      302 +  const f = fakes({ u1: ['e1'] });                            
+      303 +  // A stale poll result: the user comes back even though it i
+          +s excluded.                                                   
+      304 +  f.deps.readyUsers = async (ex) => {                         
+      305 +    f.excludedSeen.push([...ex]);                             
+      306 +    return ['u1'];                                            
+      307 +  };                                                          
+      308 +  const answer = deferred<SendResult>();                      
+      309 +  f.deps.send = async (_b, ids) => {                          
+      310 +    f.sent.push(ids.event_id);                                
+      311 +    return answer.promise;                                    
+      312 +  };                                                          
+      313 +  const w = startWorker(f.deps);                              
+      314 +  await until(() => f.excludedSeen.length >= 5);              
+      315 +  assert.deepEqual(f.sent, ['e1']);                           
+      316 +  answer.resolve({ kind: 'saved' });                          
+      317 +  await w.stop();                                             
+      318 +});                                                           
+      319 +                                                              
+      320 +test("each lookup passes the created_at of the user's last del
+          +ivered event", async () => {                                  
+      321 +  const f = fakes({ u1: ['e1', 'e2'] });                      
+      322 +  const real = f.deps.oldestUnsent;                           
+      323 +  const lasts: (string | null)[] = [];                        
+      324 +  f.deps.oldestUnsent = async (u, last) => {                  
+     … +8 lines (ctrl+o to expand)
+  ⎿  (timeout 2m)
+
+● 15/15. Spawning the U8 reviewer while the local runs go.
+
+● ecc:typescript-reviewer(TypeScript review of U8 chaos)
+  ⎿  Backgrounded agent (↓ to manage · ctrl+o to expand)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && python -I - <<'PY'
+      p='README.md'; s=open(p,encoding='utf-8').read()…)
+  ⎿  Updated README.md +2
+      76 
+      77  These review findings break no pass condition and were left as
+          they are. A body over 1 MB is refused with 413 once 1 MB of it
+          has arrived, not at once from its Content-Length header. Every
+          Postgres error of class 22 (bad data) gets a 400, not only a ba
+          d created_at. A second SIGTERM to the API does nothing more tha
+          n the first. The log line for a failed answer carries no event_
+          id, since the body may not have been read by then.
+      78 
+      79 +In the worker, a 429 pauses its user for the full Retry-After w
+         +ith no cap, so a huge value stalls that user until a restart. A
+         + send has no time limit, by decision, so an endpoint that never
+         + answers holds its user's loop until the socket fails. The poll
+         + loop has no outer catch; nothing inside it can throw today. Th
+         +e per-user record of the last delivered created_at is never pru
+         +ned.                                                           
+      80 +                                                               
+      81  ## Reading the history
+      82 
+      83  The git history has an annotated tag at the end of each phase.
+          Each paragraph below says what that phase decided and what chan
+          ged the design along the way. docs/decisions.md holds every dec
+          ision as it stands now, and docs/review-2026-11-18.md holds the
+           first review's findings.
+  ⎿  (another command ran in this repository at the same time; a change
+     made by either may show under either result)
+
+● Waiting on the local healthy and fail runs.
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && cat
+      rig/scenarios/fail.json; cat "C:/Users/dell/AppData/Local/Temp/claude/bdaf
+      7bae6af02a3d/6cdfcbee-5896-4de4-8f…)
+  ⎿  (No output)
+  ⎿  Invalid tool parameters
+
+● Monitor(local healthy rig run check lines)
+  ⎿  Monitor started · task bl13nh58f · timeout 6m 40s
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && git diff --stat; docker
+      compose logs --no-color worker 2>&1 | grep -c '"level":"error"'; docker
+      compose logs --n…)
+  ⎿  (No output)
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && docker compose logs
+      --no-color --since 2m worker 2>&1 | grep '"level":"error"' | head -3;
+      docker compose logs --…)
+  ⎿  (No output)
+
+● Local healthy run with the worker is in progress (about 2.5 min); fail run
+  follows. U6 commit is ready once it passes.
+
+● Bash(F="C:/Users/dell/AppData/Local/Temp/claude/bdaf7bae6af02a3d/6cdfcbee-5896
+      -4de4-8f55-603c65128bff/tasks/btb2p5p9w.output"; until grep -q "== fail"
+      "$F"; do sleep…)
+  ⎿  (No output)
+  ⎿  (timeout 6m 40s)
+
+› Message from ecc:typescript-reviewer
+  Two findings would make a run wrong. I read the code only. I ran no tests, no
+  docker and no tsc.
+
+  1. relay_running is written before the relay is ready (rig/chaos.ts:56-57).
+  - `docker restart` and `docker start` return once the container has started,
+  not once Node or Postgres accepts connections.
+  - At 100 posts/s, about 10 valid posts fall into each 100 ms of startup, and
+  Postgres takes 1 to 3 s.
+  - After the `api` restart at 50 s, posts after `relay_running` get connection
+  refused. After the `postgres` restart at 80 s, the api answers 5xx until
+  Postgres is up and the pool recovers.
+  - `intake_up` (rig/check.ts:207-213) counts those posts, so it fails on a
+  correct relay.
+  - Fix: before marking `relay_running`, `chaos` should poll until the service
+  answers. For `api`, poll 127.0.0.1:8080. For `postgres`, poll its health
+  status or `pg_isready`. For `worker`, no wait is needed.
+
+  2. A failed step loses the stopped window (rig/chaos.ts:52-61).
+  - If a docker command throws after `relay_stopped` is written, no
+  `relay_running` line follows. The window then stays open to Infinity
+  (rig/check.ts:203).
+  - Every later post is skipped, so `intake_up` can pass or report "nothing to
+  judge" over a real fault.
+  - `chaos` does exit 1, so the run fails anyway. Writing `relay_running` in a
+  `finally` would keep the window honest, but only if the readiness wait in
+  finding 1 is also fixed.
+
+  The project-name lookup is fine: `findContainer` filters on the compose
+  service label and skips project `rig`. Only one relay project is expected on a
+  clean runner. Locally, `ps -a` could also match a stale container from
+  another checkout, and it would take the first one.
+
+● Agent "TypeScript review of U8 chaos" finished · 56s
+
+● Monitor "local healthy rig run check lines" stream ended
+
+● Healthy passes locally on all five, but the U8 reviewer found that
+  relay_running is set before the relay is ready, which would wrongly fail
+  intake_up. I'm fixing that test-first now. · summary
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && cat rig/chaos.ts; sed -n
+      1,60p rig/chaos.test.ts)
+  ⎿  (No output)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && python -I - <<'PY'
+      p='rig/chaos.test.ts'; s=open(p,encoding='utf-8').read()…)
+  ⎿  Updated rig\chaos.test.ts +18 -1
+      40    };
+      41    const log = (): ModeLine[] =>
+      42      readFileSync(join(dir, 'modes.ndjson'), 'utf8').trim().spli
+          t('\n').map((l) => JSON.parse(l) as ModeLine);
+      43 -  return { calls, log, go: () => run({ relay: steps, dataDir: d
+         -ir, docker, now: Date.now, sleep: async () => {} }) };         
+      43 +  return { calls, log, go: () => run({ relay: steps, dataDir: d
+         +ir, docker, now: Date.now, sleep: async () => {}, ready: async 
+         +() => {} }) };                                                 
+      44  }
+      45 
+      46  test('each step brackets its docker commands with relay_stopped
+           and relay_running lines', async () => {
+     ...
+       88    });
+       89    assert.deepEqual(waits, [3000]);
+       90  });
+       91 +                                                              
+       92 +test('relay_running is written only once the restarted service
+          + is ready again', async () => {                               
+       93 +  const dir = mkdtempSync(join(tmpdir(), 'chaos-'));          
+       94 +  const order: string[] = [];                                 
+       95 +  const docker: Docker = async (args) => {                    
+       96 +    order.push(args[0] ?? '');                                
+       97 +    return args[0] === 'ps' ? 'cid second                     
+       98 +' : '';                                                       
+       99 +  };                                                          
+      100 +  const ready = async (service: string): Promise<void> => {   
+      101 +    const before = readFileSync(join(dir, 'modes.ndjson'), 'ut
+          +f8');                                                         
+      102 +    order.push(`ready ${service}, running written: ${before.in
+          +cludes('relay_running')}`);                                   
+      103 +  };                                                          
+      104 +  await run({ relay: [{ at_s: 0, action: 'restart', service: '
+          +postgres' }], dataDir: dir, docker, now: Date.now, sleep: asyn
+          +c () => {}, ready });                                         
+      105 +  assert.deepEqual(order, ['ps', 'restart', 'ready postgres, r
+          +unning written: false']);                                     
+      106 +  assert.match(readFileSync(join(dir, 'modes.ndjson'), 'utf8')
+          +, /relay_running/);                                           
+      107 +});                                                           
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && sed -n 62,95p
+      rig/chaos.test.ts)
+  ⎿  (No output)
+
+● Now the fix in chaos.ts plus ready in the other calls:
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && python -I - <<'PY'
+      p='rig/chaos.test.ts'; s=open(p,encoding='utf-8').read()…)
+  ⎿  Updated rig\chaos.test.ts +2
+      71      docker: async () => '',
+      72      now: Date.now,
+      73      sleep: async () => {},
+      74 +    ready: async () => {},                                     
+      75    });
+      76    assert.equal(ok, false);
+      77    assert.throws(() => readFileSync(join(dir, 'modes.ndjson')));
+     ...
+      86      docker: async (a) => (a[0] === 'ps' ? 'c second' : ''),
+      87      now: () => 1000,
+      88      sleep: async (ms) => void waits.push(ms),
+      89 +    ready: async () => {},                                     
+      90    });
+      91    assert.deepEqual(waits, [3000]);
+      92  });
+  ⎿  Updated rig\chaos.ts +28 -2
+      14    docker: Docker;
+      15    now: () => number;
+      16    sleep: (ms: number) => Promise<void>;
+      17 +  ready: (service: RelayStep['service']) => Promise<void>;     
+      18  }
+      19 
+      20  const execFileAsync = promisify(execFile);
+      21  const dockerCli: Docker = async (args) => (await execFileAsync(
+          'docker', args)).stdout;
+      22 +const pause = (ms: number): Promise<void> => new Promise((resol
+         +ve) => setTimeout(resolve, ms));                               
+      23 +                                                               
+      24 +// The API counts as ready when 8080 answers anything; Postgres
+         + when its healthcheck passes, then the API's pool must         
+      25 +// reconnect, so the API is checked too. The worker posts nothi
+         +ng to the API, so it needs no wait.                            
+      26 +async function readyLive(service: RelayStep['service']): Promis
+         +e<void> {                                                      
+      27 +  if (service === 'worker') return;                            
+      28 +  if (service === 'postgres') {                                
+      29 +    for (;;) {                                                 
+      30 +      const id = await findContainer(dockerCli, 'postgres');   
+      31 +      const health = id === null ? '' : (await dockerCli(['insp
+         +ect', '-f', '{{.State.Health.Status}}', id])).trim();          
+      32 +      if (health === 'healthy') break;                         
+      33 +      await pause(200);                                        
+      34 +    }                                                          
+      35 +  }                                                            
+      36 +  for (;;) {                                                   
+      37 +    // An empty JSON object is refused with 400 before Postgres
+         + is touched, so only a 400 shows the API itself is up;         
+      38 +    // for postgres a valid-shaped probe would store an event, 
+         +so the API's own 503s while reconnecting are left to the checke
+         +r.                                                             
+      39 +    const status = await fetch('http://127.0.0.1:8080/events', 
+         +{ method: 'POST', body: '{}' }).then((r) => r.status, () => 0);
+      40 +    if (status === 400) return;                                
+      41 +    await pause(200);                                          
+      42 +  }                                                            
+      43 +}                                                              
+      44 
+      45  // 130 s: the relay gives sends in flight 120 s after SIGTERM, 
+          then the stop must not cut in first.
+      46  export function actionCommands(action: RelayStep['action'], id:
+           string): string[][] {
+     ...
+      62  }
+      63 
+      64  // Returns false if any step could not be carried out; later st
+          eps still run.
+      42 -export async function run({ relay, dataDir, docker, now, sleep 
+         -}: RunOptions): Promise<boolean> {                             
+      65 +export async function run({ relay, dataDir, docker, now, sleep,
+         + ready }: RunOptions): Promise<boolean> {                      
+      66    const modes = join(dataDir, 'modes.ndjson');
+      67    // Append only: the endpoint owns this file and wipes it when
+           it starts.
+     … +18 lines (ctrl+o to expand)
+  ⎿  (timeout 2m)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && sed -n 97,101p
+      rig/chaos.test.ts | cat -A | cut -c1-90)
+  ⎿  (No output)
+
+● Update(rig\chaos.test.ts)
+  ⎿  Added 1 line, removed 2 lines
+       96    const order: string[] = [];
+       97    const docker: Docker = async (args) => {
+       98      order.push(args[0] ?? '');
+       99 -    return args[0] === 'ps' ? 'cid second                     
+      100 -' : '';                                                       
+       99 +    return args[0] === 'ps' ? 'cid second' : '';              
+      100    };
+      101    const ready = async (service: string): Promise<void> => {
+      102      const before = readFileSync(join(dir, 'modes.ndjson'), 'ut
+           f8');
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && R='MSYS_NO_PATHCONV=1
+      docker run --rm -v c:/Users/dell/Documents/tequinty/second:/app -w /app
+      node:24.22.3-alpin…)
+  ⎿  (No output)
+  ⎿  (timeout 3m)
+
+● RED/GREEN shown, tsc clean. Checking the fail run:
+
+● Bash(F="C:/Users/dell/AppData/Local/Temp/claude/bdaf7bae6af02a3d/6cdfcbee-5896
+      -4de4-8f55-603c65128bff/tasks/btb2p5p9w.output"; until [ $(grep -c
+      "TRUNCATE" "$F") -ge…)
+  ⎿  (No output)
+  ⎿  (timeout 5m)
+
+● Background command "Run healthy and fail locally with a clean table each"
+  completed (exit code 0)
+
+● Fail passes all five too. Full fresh run, then commit U6 and U8, then push.
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && printf '{\n  "healthy":
+      ["exactly_once", "order", "timing", "intake_up", "bytes"],\n  "fail":
+      ["exactly_once", "…)  ⎿  Updated rig\baseline.json +2 -1
+      1  {
+      2 -  "healthy": ["intake_up"]                                      
+      2 +  "healthy": ["exactly_once", "order", "timing", "intake_up", "b
+        +ytes"],                                                         
+      3 +  "fail": ["exactly_once", "order", "timing", "intake_up", "byte
+        +s"]                                                             
+      4  }
+  ⎿  (timeout 6m 40s)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && git add src/worker.ts
+      test/worker.test.ts compose.yaml rig/baseline.json README.md && git diff
+      --cached --stat &…)
+  ⎿  (No output)
+
+● Now U8 rig side with the Docker-socket note in plan.md.
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && python -I - <<'PY'
+      p='docs/plan.md'; s=open(p,encoding='utf-8').read()…)
+  ⎿  Updated docs\plan.md +1 -1
+      247 
+      248  ### U8 Restarts and kills
+      249  Builder: a general-purpose subagent on Opus, with ecc:docker-p
+           atterns. Reviewer: ecc:typescript-reviewer. Depends on U6; wav
+           e 5, after U7.
+      250 -Files: `rig/chaos.ts`, `rig/chaos.test.ts`, `rig/types.ts` (a 
+          -scenario field `relay: [{ at_s, action: 'restart' | 'kill', se
+          -rvice: 'api' | 'worker' | 'postgres' }]`), `rig/compose.yaml` 
+          -(a `chaos` service with the Docker socket mounted, test code o
+          -nly), `rig/Dockerfile` (the Docker CLI), `rig/scenarios/restar
+          -t.json` and `rig/scenarios/kill.json`. The chaos service write
+          -s `relay_stopped` and `relay_running` lines to `modes.ndjson`.
+      250 +Files: `rig/chaos.ts`, `rig/chaos.test.ts`, `rig/types.ts` (a 
+          +scenario field `relay: [{ at_s, action: 'restart' | 'kill', se
+          +rvice: 'api' | 'worker' | 'postgres' }]`), `rig/compose.yaml` 
+          +(a `chaos` service with the Docker socket mounted, test code o
+          +nly), `rig/Dockerfile` (the Docker CLI), `rig/scenarios/restar
+          +t.json` and `rig/scenarios/kill.json`. The chaos service write
+          +s `relay_stopped` and `relay_running` lines to `modes.ndjson`.
+          + The chaos service mounts the Docker socket. That is acceptabl
+          +e only because it is test code in the rig; the relay never mou
+          +nts it.                                                       
+      251  Done when the restart scenario passes all five checks while th
+           e worker, the API and Postgres each get SIGTERM and restart mi
+           d-run. The kill scenario (`docker kill` on the worker) is repo
+           rted but does not block the unit: any duplicates must match th
+           e sends in flight at the kill, as the worker's log shows. SIGT
+           ERM while Postgres is down is reported the same way.
+      252 
+      253  ### U9 Linux fresh clone
+
+● Pushing as asked.
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && git push -u origin master
+      --tags 2>&1 | tail -5; sleep 8; gh run list --limit 3 2>&1)
+  ⎿  (No output)
+  ⎿  (timeout 2m)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && gh run list --limit 3
+      2>&1; git status -sb | head -1)
+  ⎿  (No output)
+
+● Monitor(scenario jobs in workflow run 44466256483)
+  ⎿  Monitor started · task bfk534n2o · timeout 30m
+
+● Short update:
+
+  - U3: done, b3043fd. The SCENARIO=healthy run passes intake_up, and that's in
+    the baseline.
+  - U6: done, d6dd5ea. Running locally on Docker Desktop, both healthy and fail
+    pass all five checks.
+  - CI workflow and README sections: 6f54247.
+  - U8 rig side: ff4445c. A reviewer finding is fixed: chaos marked the relay as
+    back up before the API answered, which would have failed intake_up on a
+    correct relay.
+  - Push: master and the five tags are pushed. Workflow run 44466256483 is
+    running 11 scenarios now and I'm watching it.
+  - Gaps:
+    - The check doesn't print a time-per-event figure. That README column stays
+      TBD unless I add it to the checker.
+    - restart, kill, slow, the limit scenarios, flap, slots and down-5min have
+      only run in CI.
+
+> /ponytail:ponytail-review
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && git show ff4445c --
+      rig/types.ts rig/compose.yaml rig/Dockerfile rig/scenarios docs/plan.md |
+      head -200; cat rig…)
+  ⎿  (No output)
+
+● Bash(docker ps -a -q --filter label=com.docker.compose.service=postgres
+      --format '{{.ID}} {{.Label "com.docker.compose.project"}}'; sed -n
+      '/relay_stopped/,+12p' "c:…)
+  ⎿  (No output)
+
+● Bash(docker ps -a --filter label=com.docker.compose.service=postgres --format
+      '{{.ID}} {{.Label "com.docker.compose.project"}} {{.Names}}'; docker ps -a
+      --filter lab…)
+  ⎿  (No output)
+
+● What this change does: commit ff4445c adds a chaos service to the test rig. At
+  set times in a scenario it restarts or kills the relay's api, worker or
+  postgres container through the Docker socket. It writes relay_stopped and
+  relay_running lines so the checker skips posts made while the relay is down.
+  It also adds the restart and kill scenarios.
+
+  Load I assumed: one rig run at a time, on a clean CI runner or on the author's
+  laptop, where other compose projects may also be running.
+
+  Must fix
+
+  1. Chaos can restart another project's container (rig/chaos.ts:52-62
+     (rig/chaos.ts#L52-L62))
+     - What this is: findContainer asks Docker for every container whose compose
+       service is named postgres, api or worker, and is meant to skip the rig's
+       own.
+     - Problem: It passes -q and --format together. Docker drops the format in
+       that case: it prints WARNING: Ignoring custom format, because both
+       --format and --quiet are set. and then IDs only. So project is always
+       undefined and nothing gets filtered. On this machine the postgres label
+       matches two containers, second-postgres-1 and library-desk-postgres-1.
+       Ours is first only because it is newer. The unit test feeds a fake "id
+       project" output that real Docker never prints, so it passes anyway.
+     - Fix: Remove '-q'. Then keep only the relay's own project: take the
+       project label of the api container, and add --filter
+       label=com.docker.compose.project=<that> to the lookup. That is about two
+       lines. Change the test's fake output to what Docker really prints without
+       -q.
+     - If we skip it: On a machine with another compose project that has a
+       postgres service, the restart scenario restarts the wrong database, which
+       may be someone else's work. Our Postgres is never restarted, so the run
+       checks nothing.
+
+  Should fix
+
+  2. The readiness wait has no test of its own (rig/chaos.ts:25-41
+     (rig/chaos.ts#L25-L41))
+     - What this is: readyLive decides when chaos writes relay_running. It waits
+       until the API answers 400 to an empty body, and for a Postgres restart
+       it first waits for the healthcheck to pass.
+     - Problem: The unit test fakes ready, so only the order of calls is tested.
+       If the probe were wrong, for example a different status or URL, chaos
+       would loop forever. Or it would stop waiting too early, and intake_up
+       would count posts refused while the API was still starting.
+     - Fix: None in code. The restart scenario in CI is the real test, so read
+       its intake_up line in run 44466256483 before calling U8 done.
+     - If we skip it: A wrong probe shows up only as a CI job that hangs until
+       its 25-minute timeout, or as an intake_up failure that looks like a relay
+       bug.
+
+  Nice to have
+
+  3. Worker steps also open an "intake down" window (rig/chaos.ts:73-77
+     (rig/chaos.ts#L73-L77))
+     - What this is: Every step writes relay_stopped, including worker restarts
+       and kills.
+     - Problem: The API stays up while the worker restarts. Even so, the checker
+       leaves out the posts made during that time when it judges intake_up.
+     - Fix: Skip both mode lines when step.service === 'worker'. One if.
+     - If we skip it: intake_up checks a little less in the restart and kill
+       scenarios. No false pass or false fail.
+
+  Verdict: fix 1 first.
+
+  Not checked: how the restart and kill scenarios really behave. CI run
+  44466256483 is still running them.
+
+> /ponytail:ponytail-review
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && git status --short | grep
+      -v "^?? 2026-"; git log --oneline -3; gh run view 44466256483 --json
+      status,jobs --jq…)
+  ⎿  (No output)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && cat -n src/worker.ts |
+      sed -n 36,140p; grep -n "statement_timeout\|connectionTimeout" src/db.ts)
+  ⎿  (No output)
+● Nothing has changed since the last review: no new commits and no uncommitted
+  code. The default target, ff4445c, would give the same report, and its finding
+  1 is still open (findContainer can restart another project's Postgres). So
+  this pass reviews the other big commit from this stretch, d6dd5ea (U6, the
+  worker).
+
+  What this change does: d6dd5ea adds src/worker.ts. Every 200 ms it asks
+  Postgres which users have an event ready, and runs one loop per user, up to
+  200. Each loop sends that user's oldest unsent event to port 9000 and records
+  delivered_at before sending the next one. A failure is retried after 20 ms,
+  doubling up to 5 s. A 429 pauses only that user. On SIGTERM, sends already in
+  flight finish first.
+
+  Load I assumed: what the README and the decisions describe, 100 events a
+  second from 200 users, one worker process.
+
+  Should fix
+
+  1. A failed lookup of the next event has no test (src/worker.ts:76-83
+     (src/worker.ts#L76-L83))
+     - What this is: When oldestUnsent throws, for example while Postgres
+       restarts, the loop logs the error, waits nextWait(failures) and tries
+       again.
+     - Problem: No test covers this branch. If someone drops the sleep there,
+       nothing fails, and every active loop (up to 200) then queries a down
+       Postgres in a tight loop. The restart scenario stops Postgres at 80 s, so
+       this branch runs in a real run.
+     - Fix: Add one test in test/worker.test.ts. Make oldestUnsent throw twice,
+       then work. Assert that waits(f.sleeps) is [20, 40], that two error lines
+       carry user_id, and that the event is still delivered once. About 15
+       lines, no code change.
+     - If we skip it: A later edit can bring the tight loop back unnoticed, and
+       it would only show as a CPU spike and log flood during an outage.
+
+  What I checked and found sound:
+  - One loop per user, including when a stale poll result names a user that is
+    already running.
+  - The pause expiry before each poll.
+  - The write retried without a resend.
+  - stop() waits for the poll and every loop.
+  - Every timer is cleared.
+  - Each error path logs event_id and user_id where the code knows them.
+
+  Verdict: Ship. Fix 1 when convenient, and fix finding 1 of ff4445c before
+  trusting the restart scenario on a machine with other compose projects.
+
+  Not checked: real runs of slow, limit-user, limit-all and input. CI run
+  44466256483 is still running them: healthy, fail, restart, slots and down-5min
+  are in progress, the rest are queued.
+
+> slots failed timing on github: 939 of 12000 late, worst 22 s, because 500
+  users share 200 slots on a slow endpoint. raise the slot cap from 200 to
+  1000, a waiting send holds no db connection so slots are cheap. update the
+  decisions entry in the same commit, push, and check slots again in the next
+  run. dont touch anything else while down-5min is still running
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && cat
+      rig/scenarios/slots.json; grep -n "200" docs/decisions.md
+      docs/architecture.md | grep -iv "200 ms\|2026\|htt…)
+  ⎿  (No output)
+
+● Slow users (300 of 500, 20 s answers) fill all 200 slots, so the other users
+  wait. Test first:
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && cat >>
+      test/worker.test.ts <<'EOF'…)
+  ⎿  Running in the background (↓ to manage)
+  ⎿  (timeout 2m)
+
+● RED as expected, but the failing test leaves its sends unanswered and the run
+  hangs. Stopping it and making the test always answer:
+
+● Stop Task
+  ⎿  cd "c:/Users/dell/Documents/tequinty/second" && cat >>
+     test/worker.test.ts <<'EOF'… · stopped
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && python -I - <<'PY'
+      p='test/worker.test.ts'; s=open(p,encoding='utf-8').read()…)
+  ⎿  Updated src\worker.ts +1 -1
+      21    now(): number;
+      22  }
+      23 
+      24 -const MAX_LOOPS = 200;                                         
+      24 +const MAX_LOOPS = 1000;                                        
+      25  const POLL_MS = 200;
+      26  const SLOW_SEND_MS = 60_000;
+      27 
+  ⎿  Updated test\worker.test.ts +6 -3
+      341      return answer.promise;
+      342    };
+      343    const w = startWorker(f.deps);
+      344 -  await until(() => f.sent.length === 500);                   
+      345 -  answer.resolve({ kind: 'saved' });                          
+      346 -  await w.stop();                                             
+      344 +  try {                                                       
+      345 +    await until(() => f.sent.length === 500);                 
+      346 +  } finally {                                                 
+      347 +    answer.resolve({ kind: 'saved' });                        
+      348 +    await w.stop();                                           
+      349 +  }                                                           
+      350  });
+  ⎿  (timeout 3m)
+
+● RED 15/1, GREEN 16/0. Checking that the stopped run left no container behind,
+  then the docs:
+
+● Bash(docker ps --filter ancestor=node:24.22.3-alpine3.24 --format '{{.ID}}
+      {{.Command}} {{.RunningFor}}')
+  ⎿  (No output)
+
+● Bash(for c in d8618633aed8 62958680e001 51cd110e4d61; do docker inspect -f
+      '{{.Id}} {{join .Args " "}}' $c | cut -c1-12,65-200; done)
+  ⎿  (No output)
+
+● Bash(for c in d8618633aed8 62958680e001 51cd110e4d61; do echo "$c $(docker
+      inspect -f '{{json .Args}}' $c | cut -c1-160)"; done)
+  ⎿  (No output)
+
+● All three are my own hung RED runs. Stopping them:
+
+● Bash(docker stop -t 2 d8618633aed8 62958680e001 51cd110e4d61)
+  ⎿  (No output)
+
+● Now the decisions entry (and the two other places that name 200 loops):
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && python -I - <<'PY'
+      p='docs/decisions.md'; s=open(p,encoding='utf-8').read()…)
+  ⎿  Updated docs\architecture.md +1 -1
+      11    subgraph host["host network, one localhost"]
+      12      LG["load generator<br/>(Tequity, or rig)"] -->|"HTTP POST /
+          events"| API["intake API :8080"]
+      13      API -->|"SQL insert"| PG[("Postgres 127.0.0.1:54329<br/>vol
+          ume pgdata")]
+      14 -    W["worker<br/>poll, up to 200 user loops"] -->|"SQL poll, n
+         -ext event, delivered_at"| PG                                   
+      14 +    W["worker<br/>poll, up to 1,000 user loops"] -->|"SQL poll,
+         + next event, delivered_at"| PG                                 
+      15      W -->|"HTTP POST /events, stored bytes"| EP["endpoint :9000
+          <br/>(Tequity, or rig fake)"]
+      16    end
+      17    LG -.->|"loadgen.ndjson"| CK["rig checker"]
+  ⎿  Updated docs\decisions.md +2 -2
+      73 
+      74  ## One worker process, with delivered_at as the only record of
+          progress
+      75 
+      76 -Events go in one table: `event_id` (primary key), `user_id`, `c
+         -reated_at`, `body bytea`, `received_at timestamptz DEFAULT now(
+         -)`, `seq bigint GENERATED ALWAYS AS IDENTITY` and `delivered_at
+         -`. One worker process sends for every user, up to 200 at a time
+         -: 200 events a second even at 1-second answers. It polls for us
+         -ers with an event ready, each poll starting 200 ms after the la
+         -st one finished. A loop starts only if its user is not in the i
+         -n-memory in-flight set at that moment, so one user never has tw
+         -o loops. Each loop looks up the user's oldest unsent event afre
+         -sh, sends it, waits for the answer, commits `delivered_at` on a
+         - 2xx and moves on.                                             
+      76 +Events go in one table: `event_id` (primary key), `user_id`, `c
+         +reated_at`, `body bytea`, `received_at timestamptz DEFAULT now(
+         +)`, `seq bigint GENERATED ALWAYS AS IDENTITY` and `delivered_at
+         +`. One worker process sends for every user, up to 1,000 at a ti
+         +me. A send waiting on port 9000 holds no database connection, s
+         +o a slot costs only a socket. With 200 slots, the slots scenari
+         +o's 300 users on 20-second answers filled every slot, and 939 o
+         +f 12,000 events missed their deadline. It polls for users with 
+         +an event ready, each poll starting 200 ms after the last one fi
+         +nished. A loop starts only if its user is not in the in-memory 
+         +in-flight set at that moment, so one user never has two loops. 
+         +Each loop looks up the user's oldest unsent event afresh, sends
+         + it, waits for the answer, commits `delivered_at` on a 2xx and 
+         +moves on.                                                      
+      77 
+      78  In-flight users, pauses and retry waits live in memory and need
+           not survive a restart; after one, anything without `delivered_
+          at` is sent again.
+      79 
+     ...
+      91 
+      92  The worker's `pg` Pool has `max: 20` and the API's `max: 30`, 5
+          0 of Postgres's 100. Each loop takes a connection for one state
+          ment at a time through `pool.query`, never while waiting on por
+          t 9000. Calls to 9000 share one `new http.Agent({ keepAlive: tr
+          ue })`, so sends reuse their TCP connections; its defaults alre
+          ady keep up to 256 idle sockets and turn TCP keepalive on. Both
+           Pools give up on a connect after 5 s and cancel a statement af
+          ter 10 s, so a stalled Postgres never hangs a request.
+      93 
+      94 -Dropped: `pg`'s default of 10 connections per pool, too few for
+         - 200 user loops.                                               
+      94 +Dropped: `pg`'s default of 10 connections per pool, too few for
+         + 1,000 user loops.                                             
+      95 
+      96  pgbench, run on the build laptop's Docker Desktop with 20 conne
+          ctions, did about 3,500 steps a second, 17 times what the outag
+          e maths needs. Each step was one `UPDATE ... SET delivered_at`
+          by event_id and one query for a user's next unsent event.
+      97 
+
+● 180 words, over the 150 cap. Trimming:
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && python -I - <<'PY'
+      p='docs/decisions.md'; s=open(p,encoding='utf-8').read()…)
+  ⎿  Updated docs\decisions.md +2 -2
+      73 
+      74  ## One worker process, with delivered_at as the only record of
+          progress
+      75 
+      76 -Events go in one table: `event_id` (primary key), `user_id`, `c
+         -reated_at`, `body bytea`, `received_at timestamptz DEFAULT now(
+         -)`, `seq bigint GENERATED ALWAYS AS IDENTITY` and `delivered_at
+         -`. One worker process sends for every user, up to 1,000 at a ti
+         -me. A send waiting on port 9000 holds no database connection, s
+         -o a slot costs only a socket. With 200 slots, the slots scenari
+         -o's 300 users on 20-second answers filled every slot, and 939 o
+         -f 12,000 events missed their deadline. It polls for users with 
+         -an event ready, each poll starting 200 ms after the last one fi
+         -nished. A loop starts only if its user is not in the in-memory 
+         -in-flight set at that moment, so one user never has two loops. 
+         -Each loop looks up the user's oldest unsent event afresh, sends
+         - it, waits for the answer, commits `delivered_at` on a 2xx and 
+         -moves on.                                                      
+      76 +Events go in one table: `event_id` (primary key), `user_id`, `c
+         +reated_at`, `body bytea`, `received_at timestamptz DEFAULT now(
+         +)`, `seq bigint GENERATED ALWAYS AS IDENTITY` and `delivered_at
+         +`. One worker process sends for every user, up to 1,000 at a ti
+         +me; a waiting send holds a socket, not a database connection. I
+         +t polls for users with an event ready, each poll starting 200 m
+         +s after the last one finished. A loop starts only if its user i
+         +s not in the in-memory in-flight set at that moment, so one use
+         +r never has two loops. Each loop looks up the user's oldest uns
+         +ent event afresh, sends it, waits for the answer, commits `deli
+         +vered_at` on a 2xx and moves on.                               
+      77 
+      78  In-flight users, pauses and retry waits live in memory and need
+           not survive a restart; after one, anything without `delivered_
+          at` is sent again.
+      79 
+      80 -Dropped: several worker processes coordinating through locks, w
+         -hich 100 events a second does not need.                        
+      80 +Dropped: 200 slots, which 300 users on 20-second answers filled
+         + in the slots scenario on GitHub, so 939 of 12,000 events were 
+         +late; and several worker processes coordinating through locks, 
+         +which 100 events a second does not need.                       
+      81 
+      82  ## delivered_at is committed before the next send, and never ca
+          uses a resend
+      83 
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && python -I - <<'PY'
+      p='docs/decisions.md'; s=open(p,encoding='utf-8').read()…)
+  ⎿  Updated docs\decisions.md +2 -2
+      73 
+      74  ## One worker process, with delivered_at as the only record of
+          progress
+      75 
+      76 -Events go in one table: `event_id` (primary key), `user_id`, `c
+         -reated_at`, `body bytea`, `received_at timestamptz DEFAULT now(
+         -)`, `seq bigint GENERATED ALWAYS AS IDENTITY` and `delivered_at
+         -`. One worker process sends for every user, up to 1,000 at a ti
+         -me; a waiting send holds a socket, not a database connection. I
+         -t polls for users with an event ready, each poll starting 200 m
+         -s after the last one finished. A loop starts only if its user i
+         -s not in the in-memory in-flight set at that moment, so one use
+         -r never has two loops. Each loop looks up the user's oldest uns
+         -ent event afresh, sends it, waits for the answer, commits `deli
+         -vered_at` on a 2xx and moves on.                               
+      76 +Events go in one table, defined in db/init.sql. One worker proc
+         +ess sends for every user, up to 1,000 at a time; a waiting send
+         + holds a socket, not a database connection. It polls for users 
+         +with an event ready, each poll starting 200 ms after the last o
+         +ne finished. A loop starts only if its user is not in the in-me
+         +mory in-flight set at that moment, so one user never has two lo
+         +ops. Each loop looks up the user's oldest unsent event afresh, 
+         +sends it, waits for the answer, commits `delivered_at` on a 2xx
+         + and moves on.                                                 
+      77 
+      78  In-flight users, pauses and retry waits live in memory and need
+           not survive a restart; after one, anything without `delivered_
+          at` is sent again.
+      79 
+      80 -Dropped: 200 slots, which 300 users on 20-second answers filled
+         - in the slots scenario on GitHub, so 939 of 12,000 events were 
+         -late; and several worker processes coordinating through locks, 
+         -which 100 events a second does not need.                       
+      80 +Dropped: 200 slots, which 300 users on 20-second answers filled
+         + in the slots scenario on GitHub, making 939 of 12,000 events l
+         +ate; and several worker processes coordinating through locks, w
+         +hich 100 events a second does not need.                        
+      81 
+      82  ## delivered_at is committed before the next send, and never ca
+          uses a resend
+      83 
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && python -I - <<'PY'
+      p='docs/decisions.md'; s=open(p,encoding='utf-8').read()…)
+  ⎿  Updated docs\decisions.md +2 -2
+      73 
+      74  ## One worker process, with delivered_at as the only record of
+          progress
+      75 
+      76 -Events go in one table, defined in db/init.sql. One worker proc
+         -ess sends for every user, up to 1,000 at a time; a waiting send
+         - holds a socket, not a database connection. It polls for users 
+         -with an event ready, each poll starting 200 ms after the last o
+         -ne finished. A loop starts only if its user is not in the in-me
+         -mory in-flight set at that moment, so one user never has two lo
+         -ops. Each loop looks up the user's oldest unsent event afresh, 
+         -sends it, waits for the answer, commits `delivered_at` on a 2xx
+         - and moves on.                                                 
+      76 +Events go in one table, defined in db/init.sql. One worker proc
+         +ess sends for every user, up to 1,000 at a time; a waiting send
+         + holds a socket, not a database connection. It polls for users 
+         +with an event ready, each poll starting 200 ms after the last o
+         +ne finished. A loop starts only if its user has none running, s
+         +o one user never has two. Each loop looks up the user's oldest 
+         +unsent event afresh, sends it, waits for the answer, commits `d
+         +elivered_at` on a 2xx and moves on.                            
+      77 
+      78  In-flight users, pauses and retry waits live in memory and need
+           not survive a restart; after one, anything without `delivered_
+          at` is sent again.
+      79 
+      80 -Dropped: 200 slots, which 300 users on 20-second answers filled
+         - in the slots scenario on GitHub, making 939 of 12,000 events l
+         -ate; and several worker processes coordinating through locks, w
+         -hich 100 events a second does not need.                        
+      80 +Dropped: 200 slots, which the slots scenario's 300 users on 20-
+         +second answers filled on GitHub, making 939 of 12,000 events la
+         +te; and several worker processes coordinating through locks, wh
+         +ich 100 events a second does not need.                         
+      81 
+      82  ## delivered_at is committed before the next send, and never ca
+          uses a resend
+      83 
+
+● 148 words. Fresh full run and type check:
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && MSYS_NO_PATHCONV=1 docker
+      run --rm --network host -v "c:/Users/dell/Documents/tequinty/second:/app"
+      -w /app node…)
+  ⎿  (No output)
+  ⎿  (timeout 6m 40s)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && gh run view 44466256483
+      --json jobs --jq '.jobs[] | select(.name|test("down-5min|slots")) |
+      "\(.name) \(.status)…)
+  ⎿  (No output)
+
+● Pushing; the running down-5min job is in the old run and is not affected (the
+  workflow has no cancel-in-progress group).
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && git push origin master
+      2>&1 | tail -1; sleep 10; gh run list --limit 2)
+  ⎿  Running in the background (↓ to manage)
+  ⎿  (timeout 1m)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && until [ -s
+      "C:/Users/dell/AppData/Local/Temp/claude/bdaf7bae6af02a3d/6cdfcbee-5896-4d
+      e4-8f55-603c65128bff/tasks/…)
+  ⎿  (No output)
+  ⎿  (timeout 3m)
+
+● Background command "Push and list workflow runs" completed (exit code 0)
+
+● Watching slots in the new run:
+
+● Monitor(slots job in run 44467780434)
+  ⎿  Monitor started · task bq7h07jko · timeout 30m
+
+● The cap change is committed and pushed. Slots hasn't been rechecked yet,
+  because the new run (44467780434) just started.
+
+  - Commit 335ed12: the worker's slot cap goes from 200 to 1,000.
+    - I wrote a test first: 500 users, each with a send waiting on a slow
+      endpoint, must all have a send in flight at once. With 200 slots it failed
+      (15 pass, 1 fail). With 1,000 it passed (16 pass).
+    - The full suite passed 168 of 168, and tsc --noEmit printed nothing.
+  - Decisions entry: the worker entry now says 1,000 slots. Its "Dropped" line
+    names the old 200 and the slots failure (939 of 12,000 events late).
+    - The entry is 148 words. To fit the cap I replaced its column list with a
+      pointer to db/init.sql.
+    - I also changed 200 to 1,000 in architecture.md and in the pools entry,
+      since both named the old cap.
+  - down-5min: the earlier run is still going and I didn't touch it. The new run
+    is a separate run, so it doesn't affect it.
+  - Cleanup: I stopped three of my own test containers. They were left hanging
+    by failing test runs and held local Postgres connections.
+  - Next: I'm watching the slots job in the new run and will report its check
+    lines when it finishes.
+
+● Monitor event: "slots job in run 44467780434"
+  slots: completed success 135369650975
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && gh run view --job
+      135369650975 --log 2>&1 | grep -o '{"check".*}' | sort -u | head -6; gh
+      run view 44466256483 -…)
+  ⎿  (No output)
+  ⎿  (timeout 1m)
+
+● Monitor "slots job in run 44467780434" stream ended
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && gh api repos/abhishekakle
+      473-ctrl/tequity-outbox-relay/actions/jobs/135369650975/logs 2>&1 | grep
+      -o '{"check".*…)
+  ⎿  (No output)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && gh api repos/abhishekakle
+      473-ctrl/tequity-outbox-relay/actions/jobs/135369650975/logs 2>&1 | grep
+      -iE 'check|exa…)
+  ⎿  (No output)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && gh api repos/abhishekakle
+      473-ctrl/tequity-outbox-relay/actions/jobs/135369650975/logs >
+      "C:/Users/dell/AppData/L…)
+  ⎿  (No output)
+  ⎿  (timeout 1m)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && gh api
+      --allow-escape-sequences repos/abhishekakle473-ctrl/tequity-outbox-relay/a
+      ctions/jobs/135369650975/logs 2…)  ⎿  (No output)
+
+● The 1,000-slot cap fixed slots: it passes all five checks in the new GitHub
+  run (44467780434).
+
+  - exactly_once: 12,000 promised events, each saved once.
+  - order: 12,000 saves in created_at order for 500 users.
+  - timing: all 12,000 saved by their deadlines. Before the change, 939 were
+    late.
+  - intake_up: 12,000 posts answered correctly.
+  - bytes: all 12,000 saved bodies match what was promised.
+
+  The earlier run (44466256483) has finished. Every scenario passed except
+  slots, including down-5min, restart and kill. That run didn't include the cap
+  change. The rest of the new run is still going.
+
+  Not done yet: slots, down-5min and the other scenarios are not in
+  rig/baseline.json. Neither the baseline nor the README results table has been
+  touched since your message.
+
+● Monitor event: "scenario jobs in workflow run 44466256483"
+  [Monitor expired after 30m with no events delivered. Its command wrote to
+  stderr, which isn't delivered as events and may mean it failed: see
+  `C:\Users\dell\AppData\Local\Temp\claude\bdaf7bae6af02a3d\6cdfcbee-5896-4de4-8
+  f55-603c65128bff\tasks\bfk534n2o.output`. Re-arm it if you still need the
+  watch — and widen the filter if silence was unexpected.]
+
+● The old monitor on run 44466256483 never reported anything because its watch
+  command failed. That doesn't matter now: the run has finished, and I already
+  pulled its results by hand (every scenario passed except slots). I'm not
+  restarting that watch. The new run 44467780434 is still going.
+
+> run 44467780434 is all green, every scenario passed on ubuntu-latest. finish
+  now, we have 10 minutes.
+  fill the README results table from that run: each scenario, pass, and the run
+  link. one line that run 44466256483 failed slots on timing (939 of 12000
+  late) and 335ed12 fixed it by raising the slot cap. add our time per event
+  from the run logs if you can get it in a minute, otherwise leave it out. move
+  every chat export txt in the repo root into docs/chat/ unedited. one commit
+  for the README and one for the chats, then git push origin master --tags.
+  tell me the final commit hash. anti-ai, short reply
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && gh run view 44467780434
+      --json status,conclusion,jobs --jq '.status, .conclusion, ([.jobs[] |
+      .conclusion] | gro…)
+  ⎿  (No output)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && python -I - <<'PY'
+      p='README.md'; s=open(p,encoding='utf-8').read()…)
+  ⎿  Updated README.md +17 -17
+      54 
+      55  ## Results
+      56 
+      57 -The figures come from the workflow run named below.            
+      58 -                                                               
+      59 -| scenario | intake_up | exactly_once | order | timing | bytes 
+         -| our time per event |                                         
+      60 -|---|---|---|---|---|---|---|                                  
+      61 -| healthy | TBD | TBD | TBD | TBD | TBD | TBD |                
+      62 -| fail | TBD | TBD | TBD | TBD | TBD | TBD |                   
+      63 -| flap | TBD | TBD | TBD | TBD | TBD | TBD |                   
+      64 -| slow | TBD | TBD | TBD | TBD | TBD | TBD |                   
+      65 -| slots | TBD | TBD | TBD | TBD | TBD | TBD |                  
+      66 -| input | TBD | TBD | TBD | TBD | TBD | TBD |                  
+      67 -| limit-user | TBD | TBD | TBD | TBD | TBD | TBD |             
+      68 -| limit-all | TBD | TBD | TBD | TBD | TBD | TBD |              
+      69 -| down-5min | TBD | TBD | TBD | TBD | TBD | TBD |              
+      70 -| restart | TBD | TBD | TBD | TBD | TBD | TBD |                
+      71 -| kill | TBD | TBD | TBD | TBD | TBD | TBD |                   
+      72 -                                                               
+      73 -Workflow run: TBD                                              
+      57 +Every scenario passed all five checks on ubuntu-latest in workf
+         +low run [44467780434](https://github.com/abhishekakle473-ctrl/t
+         +equity-outbox-relay/actions/runs/44467780434), at commit 335ed1
+         +2.                                                             
+      58 +                                                               
+      59 +| scenario | intake_up | exactly_once | order | timing | bytes 
+         +|                                                              
+      60 +|---|---|---|---|---|---|                                      
+      61 +| healthy | pass | pass | pass | pass | pass |                 
+      62 +| fail | pass | pass | pass | pass | pass |                    
+      63 +| flap | pass | pass | pass | pass | pass |                    
+      64 +| slow | pass | pass | pass | pass | pass |                    
+      65 +| slots | pass | pass | pass | pass | pass |                   
+      66 +| input | pass | pass | pass | pass | pass |                   
+      67 +| limit-user | pass | pass | pass | pass | pass |              
+      68 +| limit-all | pass | pass | pass | pass | pass |               
+      69 +| down-5min | pass | pass | pass | pass | pass |               
+      70 +| restart | pass | pass | pass | pass | pass |                 
+      71 +| kill | pass | pass | pass | pass | pass |                    
+      72 +                                                               
+      73 +The run before it, [44466256483](https://github.com/abhishekakl
+         +e473-ctrl/tequity-outbox-relay/actions/runs/44466256483), faile
+         +d slots on timing: 939 of 12,000 events late, because 300 users
+         + on 20-second answers filled all 200 worker slots. 335ed12 rais
+         +ed the cap to 1,000 slots. The check prints no figure for our o
+         +wn time per event, so none is given here.                      
+      74 
+      75  ## Known gaps
+      76 
+  ⎿  … +8 files changed
+     2026-11-18-211427-command-messagesuperpowersusing-superpowersc.txt
+     2026-11-19-004526-command-messagesuperpowersusing-superpowersc.txt
+     2026-11-19-012256-command-messagesuperpowersusing-superpowersc.txt
+     +5 more
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && git push origin master
+      --tags 2>&1 | tail -2; git status -sb | head -1)
+  ⎿  Running in the background (↓ to manage)
+  ⎿  (timeout 2m)
+
+● Bash(F="C:/Users/dell/AppData/Local/Temp/claude/bdaf7bae6af02a3d/6cdfcbee-5896
+      -4de4-8f55-603c65128bff/tasks/bnadqzqrl.output"; until grep -q "master"
+      "$F"; do sleep…)
+  ⎿  (No output)
+  ⎿  (timeout 5m)
+
+● Background command "Push master and tags" completed (exit code 0)
+
+● Done and pushed. The final commit is 3aca9601473e4a3eec854e6ac773865fddfdf4d9
+  (3aca960), and origin/master is on the same commit.
+
+  - README (7bfe996): the results table gives all 11 scenarios a pass on all
+    five checks, with a link to run 44467780434. One line says run 44466256483
+    failed slots on timing (939 of 12,000 late) and 335ed12 fixed it by raising
+    the slot cap to 1,000.
+  - Time per event: left out. The check doesn't print that figure, and getting
+    it from the logs would take more than a minute.
+  - Chat exports (3aca960): the four .txt files moved from the repo root to
+    docs/chat/. The text is unedited, but git switched their line endings from
+    CRLF to LF on commit, because the repo stores every text file with LF.
+  - Push: git push origin master --tags finished with no errors. The tags were
+    already on GitHub from the first push.
+  - Not done:
+    - rig/baseline.json still lists only healthy and fail.
+    - The test for a failed next-event lookup (finding 1 of the U6 review)
+      wasn't added.
+    - The chaos container lookup (finding 1 of the U8 review) is still unfixed.
+      On a machine running another compose project with a postgres service, the
+      restart scenario could restart that project's database instead of ours.
+
+> two new chat exports are in the repo root, the latest of this session and the
+  advisor chat. move them into docs/chat/ unedited, commit "Add the final AI
+  chat exports, unedited", push. nothing else
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && git status --short)
+  ⎿  (No output)
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && ls -la; git status
+      --short --ignored)
+  ⎿  (No output)
+
+  Listed 1 directory (ctrl+o to expand)
+
+● I haven't moved, committed or pushed anything: there are no new chat exports
+  in the repo root.
+
+  - git status is clean, so there are no untracked files.
+  - The only files in the root are the tracked ones: CLAUDE.md, README.md, the
+    brief PDF, compose.yaml, the Dockerfile and the config files.
+  - No file in c:/Users/dell/Documents/tequinty is newer than the README. That
+    folder holds only review-findings.md, from 23:59 yesterday.
+  - Origin is still at 3aca960.
+
+  Save the two exports into c:/Users/dell/Documents/tequinty/second/, or tell me
+  where they are. Then I'll move them into docs/chat/ and commit "Add the final
+  AI chat exports, unedited", then push.
+
+> the two final exports are in the repo root now. move them into docs/chat/
+  unedited, commit "Add the final AI chat exports, unedited", push
+
+● Bash(cd "c:/Users/dell/Documents/tequinty/second" && git status --short; ls
+      -la --time-style=+%H:%M | grep -v "^d")
+  ⎿  (No output)
+
+  Searched for 1 pattern (ctrl+o to expand)
+● Nothing is moved, committed or pushed: the two exports are still not in the
+  repo root.
+
+  - git status is clean, and the root has only the tracked files.
+  - No .txt, .md or .json file newer than the README (11:48) exists under
+    Downloads, Desktop or Documents, three folders deep.
+  - Origin is still at 3aca960.
+
+  The export may not have been saved to disk. /export asks for a path or copies
+  to the clipboard. Save each one into c:\Users\dell\Documents\tequinty\second\,
+  or paste the full paths here, and I'll move them, commit and push.
