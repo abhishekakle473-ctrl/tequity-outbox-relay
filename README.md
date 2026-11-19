@@ -22,6 +22,56 @@
 - Retry-After is a whole number of seconds.
 - A 429's limit may be per user or cover the whole endpoint; the brief does not say which.
 
+## What this is
+
+Tequity's take-home. An intake API on port 8080 stores each event in Postgres before it answers, and a worker passes the stored events on to Tequity's endpoint on port 9000, once each and in `created_at` order per user. The list above holds only assumptions about Tequity's side. docs/problem.md states the problem in full, and docs/decisions.md holds every design choice and its reason.
+
+## How to run and verify
+
+Start the relay. Postgres listens on 127.0.0.1:54329, the intake API on port 8080, and the worker sends to localhost:9000. All containers use host networking.
+
+```
+docker compose up -d
+```
+
+Run one scenario against the fake Tequity endpoint, then stop the rig:
+
+```
+SCENARIO=healthy docker compose -f rig/compose.yaml run --rm check
+docker compose -f rig/compose.yaml down
+```
+
+The scenario files are in rig/scenarios: healthy, fail, flap, slow, slots, input, limit-user, limit-all, down-5min, restart and kill. The check prints one pass or fail line per check, with detail: `exactly_once`, `order`, `timing`, `intake_up` and `bytes`. Together they cover the brief's four pass conditions and that a saved body is the promised body.
+
+The unit tests need the relay's Postgres, so start the relay first. The type check needs no database.
+
+```
+docker run --rm --network host -v "$PWD:/app" -w /app node:24.22.3-alpine3.24 sh -c "npm ci && node --test"
+docker run --rm -v "$PWD:/app" -w /app node:24.22.3-alpine3.24 sh -c "npm ci && npx tsc --noEmit"
+```
+
+The GitHub Actions workflow `.github/workflows/scenarios.yml` runs every scenario on ubuntu-latest on each push and uploads the rig logs.
+
+## Results
+
+The figures come from the workflow run named below.
+
+| scenario | intake_up | exactly_once | order | timing | bytes | our time per event |
+|---|---|---|---|---|---|---|
+| healthy | TBD | TBD | TBD | TBD | TBD | TBD |
+| fail | TBD | TBD | TBD | TBD | TBD | TBD |
+| flap | TBD | TBD | TBD | TBD | TBD | TBD |
+| slow | TBD | TBD | TBD | TBD | TBD | TBD |
+| slots | TBD | TBD | TBD | TBD | TBD | TBD |
+| input | TBD | TBD | TBD | TBD | TBD | TBD |
+| limit-user | TBD | TBD | TBD | TBD | TBD | TBD |
+| limit-all | TBD | TBD | TBD | TBD | TBD | TBD |
+| down-5min | TBD | TBD | TBD | TBD | TBD | TBD |
+| restart | TBD | TBD | TBD | TBD | TBD | TBD |
+| kill | TBD | TBD | TBD | TBD | TBD | TBD |
+
+Workflow run: TBD
+
 ## Reading the history
 
 The git history has an annotated tag at the end of each phase. Each paragraph below says what that phase decided and what changed the design along the way. docs/decisions.md holds every decision as it stands now, and docs/review-2026-11-18.md holds the first review's findings.
@@ -36,6 +86,3 @@ The git history has an annotated tag at the end of each phase. Each paragraph be
 
 05-second-review cuts decisions.md to the current decisions, at most 150 words each (f680d19), then applies a second review by two agents. It found that the 2-second connect timer, cleared on a `connect` event that a reused keep-alive socket never fires, would kill slow answers and resend them, so the timer is gone (2a46f30; 94d0e7c carries the same change under a wrong message).
 
-## What this is
-
-Tequity's take-home. An intake API on port 8080 stores each event in Postgres before it answers, and a worker passes the stored events on to Tequity's endpoint on port 9000, once each and in `created_at` order per user. The list above holds only assumptions about Tequity's side. docs/problem.md states the problem in full, and docs/decisions.md holds every design choice and its reason.

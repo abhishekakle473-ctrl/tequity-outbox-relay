@@ -1,0 +1,73 @@
+name: scenarios
+on: push
+
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    outputs:
+      scenarios: ${{ steps.ls.outputs.scenarios }}
+    steps:
+      - uses: actions/checkout@v4
+      # Every file in rig/scenarios is a scenario (input.json too: it parses as one, with extras). Listing keeps new files in the matrix without editing this workflow.
+      - id: ls
+        run: |
+          list=$(cd rig/scenarios && ls *.json | sed 's/\.json$//' | jq -R . | jq -sc .)
+          echo "scenarios=$list" >> "$GITHUB_OUTPUT"
+
+  scenario:
+    needs: list
+    runs-on: ubuntu-latest
+    # Longest scenario is flap: 450 s load + 330 s drain = 13 min, plus build and startup.
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario: ${{ fromJson(needs.list.outputs.scenarios) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start the relay
+        run: docker compose up -d --build
+
+      - name: Wait for the intake API
+        run: |
+          # Any HTTP status means the server is listening; GET / gives 404.
+          for i in $(seq 1 60); do
+            curl -s -o /dev/null http://127.0.0.1:8080/ && exit 0
+            sleep 2
+          done
+          echo "intake API did not answer on 8080 within 120 s" >&2
+          exit 1
+
+      - name: Run the rig
+        run: |
+          set +e
+          SCENARIO=${{ matrix.scenario }} docker compose -f rig/compose.yaml run --rm check > check.out 2>&1
+          echo $? > check.exit
+          echo "check lines:"
+          grep '^{"check"' check.out
+          echo "timing check (deadlines, not our own time per event):"
+          grep '^{"check":"timing"' check.out
+          exit "$(cat check.exit)"
+
+      - name: Collect logs
+        if: always()
+        run: |
+          docker compose logs --no-color > relay.log
+          mkdir -p rig-logs
+          docker run --rm -v rig_data:/data -v "$PWD/rig-logs:/out" alpine cp -r /data/. /out/
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rig-${{ matrix.scenario }}
+          path: |
+            rig-logs/
+            relay.log
+            check.out
+
+      - name: Stop everything
+        if: always()
+        run: |
+          docker compose -f rig/compose.yaml down
+          docker compose down
