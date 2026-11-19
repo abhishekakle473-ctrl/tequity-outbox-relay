@@ -1,0 +1,12 @@
+{
+  "seed": 1,
+  "duration_s": 120,
+  "drain_s": 60,
+  "load": { "rate": 100, "users": 200, "heavy_users": 1, "heavy_share": 0.3 },
+  "steps": [],
+  "relay": [
+    { "at_s": 20, "action": "restart", "service": "worker" },
+    { "at_s": 50, "action": "restart", "service": "api" },
+    { "at_s": 80, "action": "restart", "service": "postgres" }
+  ]
+}

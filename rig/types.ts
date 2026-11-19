@@ -29,12 +29,20 @@ export interface Load {
   extras?: Extras;
 }
 
+// Restarts or kills one relay container at_s seconds into the run; rig/chaos.ts carries it out.
+export interface RelayStep {
+  at_s: number;
+  action: 'restart' | 'kill';
+  service: 'api' | 'worker' | 'postgres';
+}
+
 export interface Scenario {
   seed: number;
   duration_s: number;
   drain_s: number;
   load: Load;
   steps: readonly Step[];
+  relay?: readonly RelayStep[];
 }
 
 // One line of loadgen.ndjson per post.
@@ -142,6 +150,20 @@ function parseStep(raw: unknown, i: number): Step {
   return step;
 }
 
+function parseRelayStep(raw: unknown, i: number): RelayStep {
+  if (!isRecord(raw)) throw new TypeError(`scenario: relay[${i}] must be an object`);
+  const { action, service } = raw;
+  if (action !== 'restart' && action !== 'kill') {
+    throw new TypeError(`scenario: relay[${i}].action must be restart or kill`);
+  }
+  if (service !== 'api' && service !== 'worker' && service !== 'postgres') {
+    throw new TypeError(`scenario: relay[${i}].service must be api, worker or postgres`);
+  }
+  const at_s = num(raw['at_s'], `relay[${i}].at_s`);
+  range(at_s, `relay[${i}].at_s`, 0, Infinity);
+  return { at_s, action, service };
+}
+
 // Validates a parsed scenario file once at the boundary, so the rest of the rig can trust its shape.
 export function parseScenario(raw: unknown): Scenario {
   if (!isRecord(raw)) throw new TypeError('scenario: must be an object');
@@ -167,13 +189,19 @@ export function parseScenario(raw: unknown): Scenario {
   if (!Array.isArray(rawSteps)) throw new TypeError('scenario: steps must be an array');
   const steps = rawSteps.map(parseStep);
   refuseOverlaps(steps);
-  return {
+  const scenario: Scenario = {
     seed: num(raw['seed'], 'seed'),
     duration_s: num(raw['duration_s'], 'duration_s'),
     drain_s: num(raw['drain_s'], 'drain_s'),
     load: parsedLoad,
     steps,
   };
+  const rawRelay = raw['relay'];
+  if (rawRelay !== undefined) {
+    if (!Array.isArray(rawRelay)) throw new TypeError('scenario: relay must be an array');
+    scenario.relay = rawRelay.map(parseRelayStep);
+  }
+  return scenario;
 }
 
 // Two steps may share a moment only for different users, so modes.ndjson always says what each user gets.

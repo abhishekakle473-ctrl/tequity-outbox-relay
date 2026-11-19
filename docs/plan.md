@@ -247,7 +247,7 @@ Done when down-5min, slots and flap, at 100 a second with a 30% heavy user, pass
 
 ### U8 Restarts and kills
 Builder: a general-purpose subagent on Opus, with ecc:docker-patterns. Reviewer: ecc:typescript-reviewer. Depends on U6; wave 5, after U7.
-Files: `rig/chaos.ts`, `rig/chaos.test.ts`, `rig/types.ts` (a scenario field `relay: [{ at_s, action: 'restart' | 'kill', service: 'api' | 'worker' | 'postgres' }]`), `rig/compose.yaml` (a `chaos` service with the Docker socket mounted, test code only), `rig/Dockerfile` (the Docker CLI), `rig/scenarios/restart.json` and `rig/scenarios/kill.json`. The chaos service writes `relay_stopped` and `relay_running` lines to `modes.ndjson`.
+Files: `rig/chaos.ts`, `rig/chaos.test.ts`, `rig/types.ts` (a scenario field `relay: [{ at_s, action: 'restart' | 'kill', service: 'api' | 'worker' | 'postgres' }]`), `rig/compose.yaml` (a `chaos` service with the Docker socket mounted, test code only), `rig/Dockerfile` (the Docker CLI), `rig/scenarios/restart.json` and `rig/scenarios/kill.json`. The chaos service writes `relay_stopped` and `relay_running` lines to `modes.ndjson`. The chaos service mounts the Docker socket. That is acceptable only because it is test code in the rig; the relay never mounts it.
 Done when the restart scenario passes all five checks while the worker, the API and Postgres each get SIGTERM and restart mid-run. The kill scenario (`docker kill` on the worker) is reported but does not block the unit: any duplicates must match the sends in flight at the kill, as the worker's log shows. SIGTERM while Postgres is down is reported the same way.
 
 ### U9 Linux fresh clone

@@ -79,3 +79,20 @@ test('rng repeats for the same seed and differs for another', () => {
   assert.notDeepEqual(seqA, [c(), c(), c()]);
   for (const x of seqA) assert.ok(x >= 0 && x < 1);
 });
+
+test('a relay schedule parses, and is absent when the scenario has none', () => {
+  const relay = [{ at_s: 5, action: 'restart', service: 'worker' }, { at_s: 9, action: 'kill', service: 'postgres' }];
+  assert.deepEqual(parseScenario({ ...base, relay }).relay, relay);
+  assert.equal(parseScenario(base).relay, undefined);
+});
+
+test('bad relay entries are refused', () => {
+  const bad: unknown[] = [
+    'x',
+    [{ at_s: -1, action: 'restart', service: 'api' }],
+    [{ at_s: 1, action: 'reboot', service: 'api' }],
+    [{ at_s: 1, action: 'kill', service: 'redis' }],
+    [{ at_s: '1', action: 'kill', service: 'api' }],
+  ];
+  for (const relay of bad) assert.throws(() => parseScenario({ ...base, relay }), TypeError);
+});
