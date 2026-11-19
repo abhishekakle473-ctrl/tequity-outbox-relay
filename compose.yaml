@@ -16,5 +16,16 @@ services:
       - pgdata:/var/lib/postgresql/data
       - ./db:/docker-entrypoint-initdb.d:ro
 
+  api:
+    build: .
+    network_mode: host
+    init: true
+    command: ["node", "src/api.ts"]
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+
 volumes:
   pgdata:

@@ -72,6 +72,10 @@ The figures come from the workflow run named below.
 
 Workflow run: TBD
 
+## Known gaps
+
+These review findings break no pass condition and were left as they are. A body over 1 MB is refused with 413 once 1 MB of it has arrived, not at once from its Content-Length header. Every Postgres error of class 22 (bad data) gets a 400, not only a bad created_at. A second SIGTERM to the API does nothing more than the first. The log line for a failed answer carries no event_id, since the body may not have been read by then.
+
 ## Reading the history
 
 The git history has an annotated tag at the end of each phase. Each paragraph below says what that phase decided and what changed the design along the way. docs/decisions.md holds every decision as it stands now, and docs/review-2026-11-18.md holds the first review's findings.

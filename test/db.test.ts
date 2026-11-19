@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
+import pg from 'pg'
+import { createPool, waitForDb } from '../src/db.ts'
 import { freshDb } from './pg.ts'
 
 const columns = [
@@ -98,5 +100,65 @@ test('freshDb can create several databases at the same moment', async () => {
     }
   } finally {
     await Promise.all(pools.map((p) => p.end()))
+  }
+})
+
+const lines = (calls: readonly { arguments: unknown[] }[]): Record<string, unknown>[] =>
+  calls.map((c) => JSON.parse(String(c.arguments[0])) as Record<string, unknown>)
+
+test('an idle pool connection ended by Postgres is logged as one JSON line, and the pool keeps working', async (t) => {
+  const err = t.mock.method(console, 'error')
+  const pool = createPool(1)
+  try {
+    const pid = (await pool.query<{ pid: number }>('SELECT pg_backend_pid() AS pid')).rows[0]?.pid
+    const admin = new pg.Client({ host: '127.0.0.1', port: 54329, user: 'postgres', password: 'relay', database: 'postgres' })
+    await admin.connect()
+    try {
+      await admin.query('SELECT pg_terminate_backend($1)', [pid])
+    } finally {
+      await admin.end()
+    }
+    for (let i = 0; i < 100 && err.mock.callCount() === 0; i++) await new Promise((r) => setTimeout(r, 20))
+    assert.equal(lines(err.mock.calls)[0]?.['level'], 'error')
+    assert.equal((await pool.query<{ n: number }>('SELECT 1 AS n')).rows[0]?.n, 1)
+  } finally {
+    await pool.end()
+  }
+})
+
+test('waitForDb logs each failed try as one JSON line, waits 1 s, and returns once Postgres answers', async (t) => {
+  const pool = createPool(1)
+  try {
+    const real = pool.query.bind(pool)
+    let tries = 0
+    t.mock.method(pool, 'query', (sql: string) => (++tries === 1 ? Promise.reject(new Error('connect ECONNREFUSED')) : real(sql)))
+    const err = t.mock.method(console, 'error')
+    const start = Date.now()
+    await waitForDb(pool)
+    assert.equal(tries, 2)
+    assert.ok(Date.now() - start >= 950, 'waits about 1 s between tries')
+    const failed = lines(err.mock.calls).filter((l) => l['level'] === 'error')
+    assert.equal(failed.length, 1)
+    assert.match(String(failed[0]?.['err']), /ECONNREFUSED/)
+  } finally {
+    await pool.end()
+  }
+})
+
+test('a statement running past 10 seconds is cancelled with an error, never left hanging', { timeout: 15000 }, async () => {
+  const pool = createPool(1)
+  try {
+    await assert.rejects(pool.query('SELECT pg_sleep(11)'), /statement timeout/)
+  } finally {
+    await pool.end()
+  }
+})
+
+test('the pool gives up on a connection attempt after 5 seconds', async () => {
+  const pool = createPool(1)
+  try {
+    assert.equal(pool.options.connectionTimeoutMillis, 5000)
+  } finally {
+    await pool.end()
   }
 })

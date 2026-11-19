@@ -89,11 +89,11 @@ Dropped: committing while the next event is sent, which would save about 5 ms pe
 
 ## Connection pools are sized by hand
 
-The worker's `pg` Pool has `max: 20` and the API's `max: 30`, 50 of Postgres's 100. Each loop takes a connection for one statement at a time through `pool.query`, never while waiting on port 9000. Calls to 9000 share one `new http.Agent({ keepAlive: true })`, so sends reuse their TCP connections; its defaults already keep up to 256 idle sockets and turn TCP keepalive on.
+The worker's `pg` Pool has `max: 20` and the API's `max: 30`, 50 of Postgres's 100. Each loop takes a connection for one statement at a time through `pool.query`, never while waiting on port 9000. Calls to 9000 share one `new http.Agent({ keepAlive: true })`, so sends reuse their TCP connections; its defaults already keep up to 256 idle sockets and turn TCP keepalive on. Both Pools give up on a connect after 5 s and cancel a statement after 10 s, so a stalled Postgres never hangs a request.
 
 Dropped: `pg`'s default of 10 connections per pool, too few for 200 user loops.
 
-pgbench (a load tool that ships with Postgres), run on the build laptop's Docker Desktop with 20 connections, did about 3,500 steps a second, 17 times what the outage maths needs. Each step was one `UPDATE ... SET delivered_at` by event_id and one query for a user's next unsent event.
+pgbench, run on the build laptop's Docker Desktop with 20 connections, did about 3,500 steps a second, 17 times what the outage maths needs. Each step was one `UPDATE ... SET delivered_at` by event_id and one query for a user's next unsent event.
 
 ## The design is sized for an endpoint that answers in about 10 ms
 
@@ -188,7 +188,7 @@ Dropped: giving up after a lost connection, which loses the event whenever nothi
 
 ## A normal stop gives sends in flight 120 seconds
 
-On SIGTERM the worker stops polling and starting sends, lets every send in flight and its `delivered_at` write finish, closes its Pool and exits. Compose's `stop_grace_period` is 120 seconds. A send cut off by the kill or a crash is sent again on restart and may be saved twice. Each service starts Node with an exec-form `CMD ["node", "worker.js"]` (`api.js` for the API), since Node as process 1 ignores SIGTERM without a handler. The API's handler stops taking posts and lets inserts in progress commit.
+On SIGTERM the worker stops polling and starting sends, lets every send in flight and its `delivered_at` write finish, closes its Pool and exits. Compose's `stop_grace_period` is 120 seconds. A send cut off by the kill or a crash is sent again on restart and may be saved twice. Each service starts Node with an exec-form `command: ["node", "src/worker.ts"]` (`src/api.ts` for the API) and `init: true`, since Node as process 1 ignores SIGTERM without a handler. The API's handler stops taking posts and lets inserts in progress commit.
 
 The worker exits as soon as its sends finish, so the 120 seconds is spent only on a slow one.
 

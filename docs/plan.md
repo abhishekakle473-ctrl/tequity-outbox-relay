@@ -168,7 +168,7 @@ Done when `node --test test/intake.test.ts` passes a table of cases:
 - 1 MB plus one byte giving 413
 
 ### U3 Intake API
-Builder: ecc:tdd-guide on Opus. Reviewer: ecc:typescript-reviewer. Depends on U1, U2 and R4; wave 2.
+Builder: ecc:tdd-guide on Opus. Reviewers: ecc:typescript-reviewer and ecc:silent-failure-hunter, since the 2xx promise starts here. Depends on U1, U2 and R4; wave 2.
 Files: `src/db.ts`, `insert` in `src/intake.ts`, `src/api.ts`, `test/api.test.ts`, the `api` service in `compose.yaml`.
 Interfaces:
 - `src/db.ts`: `createPool(max: number): pg.Pool` on 127.0.0.1:54329 with an `error` handler, and `waitForDb(pool: pg.Pool): Promise<void>`, which retries until Postgres answers.
