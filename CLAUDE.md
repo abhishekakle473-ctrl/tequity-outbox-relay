@@ -34,6 +34,10 @@ Nothing counts as working until a test run shows it. Any claim that something wo
 
 Keep the code as small as the problem allows. No layers, options, config or libraries the brief does not call for.
 
+## Code
+
+TypeScript uses erasable syntax only and passes `tsc --noEmit` under the committed strict tsconfig. No `any`, and no `!` where a check fits. At run time the relay uses Node's `http` module and `pg`, nothing more: no framework, ORM, logger or retry library. Input from outside is checked where it enters, the intake body and the answers from port 9000, and trusted inside. Expected failures come back as a typed union and are never thrown. No error is swallowed; each is logged as one JSON line, with event_id and user_id where known. Files follow docs/architecture.md, with one test file per source file. A test's name states a behaviour. Comments say why, not what. Builders load ecc:typescript-patterns, never ecc:backend-patterns, which pushes layers and Redis this repo does not want.
+
 ## Writing
 
 Everything written here follows the anti-ai writing rules: plain words, short sentences, no filler. Chat replies use bullets. Documents in the repo use prose, with one exception: the README opens with its assumptions as a list, because the brief asks for one.
