@@ -283,3 +283,22 @@ test('run logs every post, with an err, when the url cannot be used', async () =
     assert.equal(typeof l.err, 'string');
   }
 });
+
+test('run gives up after 10 s, logging err timeout, when no answer ever comes', async () => {
+  const server = createServer((req) => req.resume()); // takes the post, never answers
+  await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
+  const { port } = server.address() as AddressInfo;
+  const dataDir = mkdtempSync(join(tmpdir(), 'loadgen-test-'));
+  try {
+    await run({ scenario: scenario({ rate: 1 }, 8, 1), dataDir, url: `http://127.0.0.1:${port}/events` });
+    const [line] = readLines(dataDir);
+    assert.ok(line !== undefined);
+    assert.equal(line.status, null);
+    assert.equal(line.err, 'timeout');
+    const took = line.t_done - line.t_send;
+    assert.ok(took >= 9_900 && took < 11_000, `gave up after ${took} ms`);
+  } finally {
+    server.closeAllConnections();
+    server.close();
+  }
+});

@@ -6,6 +6,7 @@ x-rig: &rig
     context: ..
     dockerfile: rig/Dockerfile
   network_mode: host
+  init: true # a tiny init as process 1 passes SIGTERM on, so compose down stops each service at once
   volumes:
     - data:/data # a named volume: on Docker Desktop for Windows a bind mount took minutes for 12,000 appendFileSync calls and stalled the load generator
   environment:
