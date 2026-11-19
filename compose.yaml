@@ -26,6 +26,17 @@ services:
       postgres:
         condition: service_healthy
 
+  worker:
+    build: .
+    network_mode: host
+    init: true
+    command: ["node", "src/worker.ts"]
+    restart: unless-stopped
+    # Sends in flight and their delivered_at writes get 120 s to finish before the kill (docs/decisions.md).
+    stop_grace_period: 120s
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   pgdata:

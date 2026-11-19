@@ -1,3 +1,4 @@
 {
-  "healthy": ["intake_up"]
+  "healthy": ["exactly_once", "order", "timing", "intake_up", "bytes"],
+  "fail": ["exactly_once", "order", "timing", "intake_up", "bytes"]
 }
