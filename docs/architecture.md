@@ -71,7 +71,7 @@ src/db.ts            Pool with error handler, connect retry
 src/intake.ts        validate(buf) -> {ok,fields} | {status,reason}; insert(pool,buf,fields) -> status
 src/api.ts           HTTP server :8080, keepAliveTimeout 65 s, SIGTERM
 src/send.ts          post(agent,url,buf,ids) -> {kind:"saved"} | {kind:"pause",seconds} | {kind:"retry",why}
-src/sql.ts           readyUsers(pool,excluded,limit), oldestUnsent(pool,user), markDelivered(pool,id)
+src/sql.ts           readyUsers(pool,excluded,limit), oldestUnsent(pool,user,lastDelivered), markDelivered(pool,id) -> boolean
 src/worker.ts        poll, user loops, waits, SIGTERM; nextWait(failures) pure
 test/*.test.ts       node --test and tsc --noEmit, one file per src file
 rig/compose.yaml  rig/Dockerfile

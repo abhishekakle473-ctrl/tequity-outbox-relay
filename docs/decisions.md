@@ -107,7 +107,7 @@ Dropped: retries starting at 0.5 seconds, which at 2% 500s would need a under 1 
 
 The worker looks at each user's oldest unsent event by `created_at`, then `seq`. If that event arrived less than 1 second ago, by `received_at` on Postgres's clock, the whole user waits; a later event never goes out while an earlier one is held. The check runs before every send, so an earlier event that turns up mid-loop goes first once its second has passed.
 
-Events can reach us out of created_at order over parallel connections. The hold lets a slightly late one take its place, for 1 of the brief's 30 seconds. One that arrives after a later event was sent still goes out, late, and is logged, since dropping it would break exactly once.
+Events can arrive out of created_at order over parallel connections; the hold lets a slightly late one take its place, for 1 of the brief's 30 seconds. One that arrives after a later event was sent still goes out, late, and is logged, since dropping it would break exactly once. It is spotted from the user's last delivered created_at, so a restart can miss one.
 
 Dropped: holding each event on its own arrival time, which can send a later event while an earlier one is held.
 
@@ -128,7 +128,7 @@ ORDER BY received_at LIMIT $2;
 
 Dropped: filtering on received_at before the pick. With the oldest event held and the second not, the filter picks the second, which goes out first.
 
-`EXPLAIN ANALYZE` on Docker Desktop, 1,000 unsent events: an index-only scan under 2 ms. 30,000 rows after heavy updates is untested.
+At 30,000 unsent events on Docker Desktop this index-only scan takes 8 ms after a VACUUM, 22 ms before; U7 measures heavier churn.
 
 
 ## created_at stays a string and is cast in SQL

@@ -206,8 +206,8 @@ Builder: this session, with superpowers:test-driven-development. Reviewers: ecc:
 Files: `src/sql.ts`, `test/sql.test.ts`, on its own `freshDb` database.
 Interfaces:
 - `readyUsers(pool: pg.Pool, excluded: readonly string[], limit: number): Promise<string[]>`
-- `oldestUnsent(pool: pg.Pool, userId: string): Promise<Pending | null>`, where `Pending` is `{ event_id: string; body: Buffer; late: boolean }`, and null means none is left or the oldest is still held
-- `markDelivered(pool: pg.Pool, eventId: string): Promise<void>`
+- `oldestUnsent(pool: pg.Pool, userId: string, lastDelivered: string | null): Promise<Pending | null>`, where `Pending` is `{ event_id: string; body: Buffer; created_at: string; late: boolean }`, and null means none is left or the oldest is still held. `created_at` is opaque text the worker keeps per user and passes back as `lastDelivered`; `late` is true when the event was created before it, compared in SQL.
+- `markDelivered(pool: pg.Pool, eventId: string): Promise<boolean>`, false when the row was already marked or is missing
 - `unsentCount(pool: pg.Pool): Promise<number>`
 
 Done when `node --test test/sql.test.ts` shows:
@@ -233,6 +233,7 @@ Done when `node --test test/worker.test.ts`, with fake send and SQL, shows:
 - retry waits run 20, 40 and so on up to 5000 ms, and reset after a success
 - a 429 ends the loop and pauses the user for max(1, Retry-After) seconds
 - a failed `delivered_at` write is retried and never resends
+- `markDelivered` returning false is logged and the loop moves on, never retried
 - a thrown error counts as a failed attempt
 - SIGTERM lets the send in flight and its write finish
 - a user's next send starts only after the previous `delivered_at` commit
