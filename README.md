@@ -15,7 +15,7 @@
 - created_at has at most 6 decimal places of seconds, and one without a time zone is in UTC.
 - "The same body" in the brief means the same bytes.
 - A post that repeats an event_id is a resend of the same event, even if its body differs.
-- A valid event is a JSON object under 1 MB with a non-empty event_id, user_id and created_at.
+- A valid event is a JSON object in UTF-8 under 1 MB, with a non-empty created_at and a non-empty event_id and user_id of at most 1,000 bytes each, with no NUL character.
 - Any 2xx from the endpoint means saved, and any other status means not saved.
 - A slow answer always comes in the end. The endpoint never holds a connection open without answering.
 - A connection lost after our request went out, before a status line came back, is the brief's "No connection: We are down. Not saved." A 200 status line means saved even if the rest of the answer is cut off.

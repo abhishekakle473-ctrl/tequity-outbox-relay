@@ -151,12 +151,11 @@ Dropped: a 409 for a different body, which could make the load generator retry f
 
 ## Intake answers 200 only after the commit
 
-Intake answers 200 only after Postgres has committed the event. It answers 400 to a body that is not a JSON object or lacks a non-empty event_id, user_id or created_at, 413 to a body over 1 MB, and 503 to any database error except a refused created_at cast. `type` and `data` pass through unchecked. Every 400 is logged with its reason. The server sets `keepAliveTimeout` to 65 seconds and `headersTimeout` to 66: with Node's 5-second default, our server can close an idle connection just as the load generator reuses it, and that post fails unanswered.
+Intake answers 200 only after Postgres has committed the event. It answers 400 to a body that is not a UTF-8 JSON object, lacks a non-empty event_id, user_id or created_at, or has an event_id or user_id over 1,000 bytes or holding a NUL; 413 to a body over 1 MB; and 503 to any database error except a refused created_at cast. Every 400 is logged with its reason; `type` and `data` are not checked. `keepAliveTimeout` is 65 s and `headersTimeout` 66 s, so Node's 5-second default never closes a connection the load generator is reusing.
 
-The relay needs those three fields to store each event once and send it in order. A 2xx promises delivery; a 400 or 503 promises nothing.
+Those three fields let the relay store each event once and in order. Postgres text cannot hold NUL, and its index refuses keys over about 2.7 KB; either would be a 503 at insert, retried forever.
 
 Dropped: answering 400 to a database error, which blames Tequity's event for our fault.
-
 ## Any 2xx means saved, and anything else is retried from 20 ms
 
 Any 2xx means saved. Any other status, a refused connection and a failed connect mean not saved; redirects are not followed. A not-saved event is retried after 20 ms, the wait doubling on each failure in a row up to 5 seconds and going back to 20 ms after a success. A single 500 costs about 20 ms, a long failure backs off to one try every 5 seconds per user, and recovery is noticed within 5 seconds. A 4xx other than 429 is retried too, since skipping the event breaks exactly once.
