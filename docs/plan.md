@@ -66,6 +66,36 @@ These inputs are implied by the spec but easy to miss. Each one has a test in th
 - A heavy user with a large backlog getting `Retry-After: 0`: paused 1 s, never a tight loop (U6).
 - SIGTERM while Postgres is down: the stop waits to the 120 s kill, and the event is resent after restart, reported in the run (U8).
 
+## How every relay unit runs
+
+Every unit, U1 to U10, goes through the same six steps. A subagent builder does steps 1 and 2 and reports its commands and their output; it never commits. Steps 3 to 6 are done in this session.
+1. Failing tests. Write the tests named under "Done when", run them, and see each one fail for the reason it names, never for a typo or a missing import alone.
+2. Code. Write the least code that makes them pass, then run the unit's tests until they pass.
+3. Regression run. Run every unit test with `node --test`, `npx tsc --noEmit`, and, from U3 on, every scenario already listed in `rig/baseline.json`. A listed check that fails stops the unit.
+4. Review. The unit's reviewers run in parallel, read only, each given the unit's files and its section of this plan. A confirmed finding gets a failing test first, then the fix; a finding pushed back on is named in the commit message with the reason.
+5. Verify, with superpowers:verification-before-completion: a fresh run of step 3, exit codes captured, and the "Done when" list checked line by line.
+6. Commit. One commit with the unit's files named one by one, its doc edits, and a message that states what was built and names each test run with what it printed. No `.js` file.
+
+Tests run in the pinned image. Tests that need Postgres use host networking to reach 127.0.0.1:54329:
+`MSYS_NO_PATHCONV=1 docker run --rm --network host -v "<repo>:/app" -w /app node:24.22.3-alpine3.24 node --test <files>`
+Each test file that needs Postgres gets its own database from `freshDb` (U1), so units running at the same time never touch each other's rows.
+
+## Waves
+
+Units in one wave touch no file in common and can be built at the same time. Rig scenario runs hold ports 8080, 9000 and 54329, so only one unit runs scenarios at a time.
+
+| Wave | Units | Built by |
+|---|---|---|
+| 1 | U1, U2, U4 | U1 and U2 by subagents, U4 in this session |
+| 2 | U3, U5 | U3 by a subagent, U5 in this session |
+| 3 | U6 | this session |
+| 4 | U7 | this session |
+| 5 | U8 | a subagent |
+| 6 | U9 | this session, with the author |
+| 7 | U10 | this session |
+
+U7 and U8 both run scenarios and both add to `rig/baseline.json`, so they are separate waves.
+
 ## Units
 
 ### R1 Fake endpoint
@@ -78,7 +108,7 @@ Done when `node --test rig/endpoint.test.ts` shows that:
 - a duplicate post is saved and logged twice
 - each request and each mode change is exactly one log line
 
-Parallel with R2, R3, U1, U2 and U4.
+Parallel with R2 and R3.
 
 ### R2 Load generator
 Builds `rig/loadgen.ts` and `rig/loadgen.test.ts`: posts a scenario's load to :8080 and writes `loadgen.ndjson`.
@@ -109,17 +139,26 @@ Done when `SCENARIO=healthy` with no relay running prints five FAIL lines, each 
 The commit carries that output. Needs R1 to R3.
 
 ### U1 Database and image
-Builds `db/init.sql`, `compose.yaml` (Postgres first), `Dockerfile`, `package.json` and `package-lock.json`.
+Builder: a general-purpose subagent on Sonnet, with ecc:docker-patterns and ecc:postgres-patterns. Reviewers: ecc:typescript-reviewer and ecc:database-reviewer. Depends on nothing; wave 1.
+Files: `db/init.sql`, `compose.yaml` (Postgres only for now), `Dockerfile`, `package.json`, `package-lock.json`, `test/pg.ts`, `test/db.test.ts`, docs/decisions.md.
+- `db/init.sql`: the `events` table and `events_pending` index exactly as in architecture.md.
+- `compose.yaml`: Postgres from `postgres:16.16-alpine`, host networking, `postgres -p 54329 -c listen_addresses=127.0.0.1 -c timezone=UTC`, password in the file, health check `pg_isready -h 127.0.0.1 -p 54329`, named volume `pgdata`, `./db` mounted read-only on `/docker-entrypoint-initdb.d`, `restart: unless-stopped`, `init: true`.
+- `Dockerfile`: `node:24.22.3-alpine3.24`, `npm ci --omit=dev`, copies `package.json`, `package-lock.json` and `src/`; each service gives its own exec-form command.
+- `package.json`: `pg` as the one runtime dependency and `@types/pg` as a dev dependency, both exact. The TypeScript and pinned-builds entries in decisions.md name `@types/pg`.
+- `test/pg.ts` exports `freshDb(name: string): Promise<pg.Pool>`, which drops and recreates database `name` on 127.0.0.1:54329, runs `db/init.sql` in it, and returns a pool on it.
+
 Done when:
 - `docker compose up -d postgres` turns healthy
 - `\d events` in psql shows the contract's columns and `events_pending`
 - `show timezone` prints UTC
 - a row survives `docker compose down` and `up`
-
-Parallel with the rig units.
+- `node --test test/db.test.ts` shows `freshDb` gives an empty `events` table, twice in a row
 
 ### U2 Intake validation
-Builds `validate` in `src/intake.ts` and `test/intake.test.ts`, with no database.
+Builder: ecc:tdd-guide on Sonnet. Reviewer: ecc:typescript-reviewer. Depends on nothing; wave 1.
+Files: `src/intake.ts` (`validate` only), `test/intake.test.ts`. No database.
+Interface: `validate(body: Buffer): Valid | Invalid`, where `Valid` is `{ ok: true; event_id: string; user_id: string; created_at: string }` with created_at already cut to 6 decimals, and `Invalid` is `{ ok: false; status: 400 | 413; reason: string }`.
+
 Done when `node --test test/intake.test.ts` passes a table of cases:
 - broken JSON
 - a JSON array
@@ -128,23 +167,31 @@ Done when `node --test test/intake.test.ts` passes a table of cases:
 - 7 decimals cut to 6 with a log line
 - 1 MB plus one byte giving 413
 
-Parallel with everything.
-
 ### U3 Intake API
-Builds `src/db.ts`, `insert` in `src/intake.ts`, `src/api.ts`, `test/api.test.ts` and the api service.
-Done when `node --test test/api.test.ts` against the compose Postgres shows:
+Builder: ecc:tdd-guide on Opus. Reviewer: ecc:typescript-reviewer. Depends on U1, U2 and R4; wave 2.
+Files: `src/db.ts`, `insert` in `src/intake.ts`, `src/api.ts`, `test/api.test.ts`, the `api` service in `compose.yaml`.
+Interfaces:
+- `src/db.ts`: `createPool(max: number): pg.Pool` on 127.0.0.1:54329 with an `error` handler, and `waitForDb(pool: pg.Pool): Promise<void>`, which retries until Postgres answers.
+- `insert(pool: pg.Pool, body: Buffer, fields: Valid): Promise<200 | 400 | 503>` in `src/intake.ts`.
+- `createApi(pool: pg.Pool): http.Server` in `src/api.ts`. Run directly, it listens on `:8080` with a pool of 30.
+
+Done when `node --test test/api.test.ts`, on its own `freshDb` database, shows:
 - the row is committed before the 200
 - two concurrent posts of one event_id give one row and two 200s
 - a different body keeps the first and is logged
 - month 13 gives 400
 - another path gives 404
-- stopping Postgres gives 503, and a post after restart gives 200
+- a pool on a dead port gives 503; after `pg_terminate_backend` ends the API's connections, the next post gives 200. The shared Postgres is never stopped.
 - `keepAliveTimeout` is 65000
+- SIGTERM stops new posts and lets an insert in progress commit and answer
 
-Then `SCENARIO=healthy` passes `intake_up`, which goes into the baseline. Needs U1, U2 and R4.
+Then `SCENARIO=healthy` passes `intake_up`, which goes into the baseline.
 
-### U4 Send
-Builds `src/send.ts` and `test/send.test.ts`, against an in-process test server.
+### U4 Send (this session, test-first)
+Builder: this session, with superpowers:test-driven-development. Reviewers: ecc:typescript-reviewer and ecc:silent-failure-hunter. Depends on nothing; wave 1.
+Files: `src/send.ts`, `test/send.test.ts`, against an in-process test server.
+Interface: `post(agent: http.Agent, url: string, body: Buffer): Promise<SendResult>`, where `SendResult` is `{ kind: 'saved' } | { kind: 'pause'; seconds: number } | { kind: 'retry'; why: string }`.
+
 Done when `node --test test/send.test.ts` shows:
 - a 200 with a cut body is saved
 - 500, 302 and 404 are retry
@@ -154,10 +201,15 @@ Done when `node --test test/send.test.ts` shows:
 - a 3-second answer on a reused keep-alive socket is waited for and saved
 - every response is drained, so the socket is reused
 
-Parallel with everything.
+### U5 SQL (this session, test-first)
+Builder: this session, with superpowers:test-driven-development. Reviewers: ecc:typescript-reviewer and ecc:database-reviewer. Depends on U1; wave 2.
+Files: `src/sql.ts`, `test/sql.test.ts`, on its own `freshDb` database.
+Interfaces:
+- `readyUsers(pool: pg.Pool, excluded: readonly string[], limit: number): Promise<string[]>`
+- `oldestUnsent(pool: pg.Pool, userId: string): Promise<Pending | null>`, where `Pending` is `{ event_id: string; body: Buffer; late: boolean }`, and null means none is left or the oldest is still held
+- `markDelivered(pool: pg.Pool, eventId: string): Promise<void>`
+- `unsentCount(pool: pg.Pool): Promise<number>`
 
-### U5 SQL
-Builds `src/sql.ts` and `test/sql.test.ts`, against the compose Postgres.
 Done when `node --test test/sql.test.ts` shows:
 - a user whose oldest event is held is not returned, even with a ready second event
 - excluded users are left out before the limit
@@ -167,10 +219,14 @@ Done when `node --test test/sql.test.ts` shows:
 - `markDelivered` sets one row
 - `EXPLAIN` shows an index-only scan on `events_pending`
 
-Needs U1.
+### U6 Worker (this session, test-first)
+Builder: this session, with superpowers:test-driven-development. Reviewers: ecc:typescript-reviewer and ecc:silent-failure-hunter. Depends on U3 (`src/db.ts`), U4, U5 and R4; wave 3.
+Files: `src/worker.ts`, `test/worker.test.ts`, the `worker` service in `compose.yaml`.
+Interfaces:
+- `nextWait(failures: number): number`, a pure function
+- `startWorker(deps: WorkerDeps): { stop(): Promise<void> }`, where `WorkerDeps` holds the four U5 queries bound to a pool, `send` bound to an agent and the endpoint URL, and `log`, so tests pass fakes
+- Run directly, the worker uses a pool of 20, `http://localhost:9000/events` and one `new http.Agent({ keepAlive: true })`.
 
-### U6 Worker
-Builds `src/worker.ts`, `test/worker.test.ts` and the worker service.
 Done when `node --test test/worker.test.ts`, with fake send and SQL, shows:
 - a user that two polls both return still has one loop
 - a poll starts only after the last one finished
@@ -179,32 +235,33 @@ Done when `node --test test/worker.test.ts`, with fake send and SQL, shows:
 - a failed `delivered_at` write is retried and never resends
 - a thrown error counts as a failed attempt
 - SIGTERM lets the send in flight and its write finish
+- a user's next send starts only after the previous `delivered_at` commit
+- a send in flight over 60 s logs a warning with its event_id, and the startup log gives the unsent count
 
-Then healthy, fail, slow, limit-user, limit-all and input pass all five checks, and go into the baseline. Needs U3, U4, U5 and R4.
+Then healthy, fail, slow, limit-user, limit-all and input pass all five checks, and go into the baseline.
 
 ### U7 Outage, slots and flap at full load
-Done when down-5min, slots and flap, at 100 a second with a 30% heavy user, pass all five checks, and the commit records every figure in the capacity section next to its expected value.
-
-Parallel with U8. Needs U6.
+Builder: this session; no new relay code is expected. Reviewer: ecc:typescript-reviewer, on any `.ts` the unit changes. Depends on U6; wave 4.
+Done when down-5min, slots and flap, at 100 a second with a 30% heavy user, pass all five checks and go into the baseline, and the commit records every figure in the capacity section next to its expected value. A figure worse than expected goes back to its decision first.
 
 ### U8 Restarts and kills
-Done when the restart scenario passes all five checks while the worker, the API and Postgres each get SIGTERM and restart mid-run. The kill scenario (`docker kill` on the worker) is reported but does not block the unit: any duplicates must match the sends in flight at the kill, as the worker's log shows.
-
-Parallel with U7. Needs U6.
+Builder: a general-purpose subagent on Opus, with ecc:docker-patterns. Reviewer: ecc:typescript-reviewer. Depends on U6; wave 5, after U7.
+Files: `rig/chaos.ts`, `rig/chaos.test.ts`, `rig/types.ts` (a scenario field `relay: [{ at_s, action: 'restart' | 'kill', service: 'api' | 'worker' | 'postgres' }]`), `rig/compose.yaml` (a `chaos` service with the Docker socket mounted, test code only), `rig/Dockerfile` (the Docker CLI), `rig/scenarios/restart.json` and `rig/scenarios/kill.json`. The chaos service writes `relay_stopped` and `relay_running` lines to `modes.ndjson`.
+Done when the restart scenario passes all five checks while the worker, the API and Postgres each get SIGTERM and restart mid-run. The kill scenario (`docker kill` on the worker) is reported but does not block the unit: any duplicates must match the sends in flight at the kill, as the worker's log shows. SIGTERM while Postgres is down is reported the same way.
 
 ### U9 Linux fresh clone
-Done when, on Linux with plain Docker Engine (a GitHub Actions Ubuntu runner if the author puts the repo on GitHub):
+Builder: this session, with the author, who decides whether the repo goes on GitHub for an Actions Ubuntu runner. Reviewer: ecc:typescript-reviewer, on any `.ts` the unit changes. Depends on U7 and U8; wave 6.
+Done when, on Linux with plain Docker Engine:
 - `git clone` and `docker compose up -d` run cleanly
 - three full scenario runs pass every baseline check
 - the 127.0.0.1-bound endpoint case passes
 - the capacity figures are recorded next to their expected values
 
-The README gets the commands and their output. Needs U7 and U8.
+The README gets the commands and their output.
 
 ### U10 Handover
+Builder: this session. Reviewer: ecc:typescript-reviewer, over the final tree. Depends on U9; wave 7.
 Done when:
 - every chat session is exported unedited under `docs/chat/`
 - a fresh clone of the final commit shows the README opening with its assumptions
 - the tags are pushed with the branch
-
-Needs U9.
