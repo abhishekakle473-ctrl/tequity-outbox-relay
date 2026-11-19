@@ -54,23 +54,23 @@ The GitHub Actions workflow `.github/workflows/scenarios.yml` runs every scenari
 
 ## Results
 
-The figures come from the workflow run named below.
+Every scenario passed all five checks on ubuntu-latest in workflow run [44467780434](https://github.com/abhishekakle473-ctrl/tequity-outbox-relay/actions/runs/44467780434), at commit 335ed12.
 
-| scenario | intake_up | exactly_once | order | timing | bytes | our time per event |
-|---|---|---|---|---|---|---|
-| healthy | TBD | TBD | TBD | TBD | TBD | TBD |
-| fail | TBD | TBD | TBD | TBD | TBD | TBD |
-| flap | TBD | TBD | TBD | TBD | TBD | TBD |
-| slow | TBD | TBD | TBD | TBD | TBD | TBD |
-| slots | TBD | TBD | TBD | TBD | TBD | TBD |
-| input | TBD | TBD | TBD | TBD | TBD | TBD |
-| limit-user | TBD | TBD | TBD | TBD | TBD | TBD |
-| limit-all | TBD | TBD | TBD | TBD | TBD | TBD |
-| down-5min | TBD | TBD | TBD | TBD | TBD | TBD |
-| restart | TBD | TBD | TBD | TBD | TBD | TBD |
-| kill | TBD | TBD | TBD | TBD | TBD | TBD |
+| scenario | intake_up | exactly_once | order | timing | bytes |
+|---|---|---|---|---|---|
+| healthy | pass | pass | pass | pass | pass |
+| fail | pass | pass | pass | pass | pass |
+| flap | pass | pass | pass | pass | pass |
+| slow | pass | pass | pass | pass | pass |
+| slots | pass | pass | pass | pass | pass |
+| input | pass | pass | pass | pass | pass |
+| limit-user | pass | pass | pass | pass | pass |
+| limit-all | pass | pass | pass | pass | pass |
+| down-5min | pass | pass | pass | pass | pass |
+| restart | pass | pass | pass | pass | pass |
+| kill | pass | pass | pass | pass | pass |
 
-Workflow run: TBD
+The run before it, [44466256483](https://github.com/abhishekakle473-ctrl/tequity-outbox-relay/actions/runs/44466256483), failed slots on timing: 939 of 12,000 events late, because 300 users on 20-second answers filled all 200 worker slots. 335ed12 raised the cap to 1,000 slots. The check prints no figure for our own time per event, so none is given here.
 
 ## Known gaps
 
